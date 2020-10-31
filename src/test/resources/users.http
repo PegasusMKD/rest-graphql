@@ -1,0 +1,7 @@
+POST http://localhost:8080/users/page?attributePaths=posts, posts.comments, person, posts.postedBy
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}

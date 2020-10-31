@@ -4,11 +4,8 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.GenericMapperDecorator;
 import spring.graphql.rest.nonoptimized.core.GenericPropertyWrapper;
 import spring.graphql.rest.nonoptimized.core.UniversalMapper;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
@@ -28,11 +25,11 @@ import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static spring.graphql.rest.nonoptimized.core.Helpers.getGenericPropertyWrappers;
+
 
 @Service
 public class AccountService {
-
-	private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	private final AccountRepository accountRepository;
 	private final UniversalMapper universalMapper;
@@ -44,56 +41,38 @@ public class AccountService {
 	}
 
 	public AccountDto findOne(String id, String[] attributePaths) {
-		List<String> paths = new ArrayList<>(Arrays.asList(attributePaths));
-		List<GenericPropertyWrapper> propertyWrappers = paths.stream().map(val ->
-				new GenericPropertyWrapper("", val, val)).collect(Collectors.toList());
-		GenericMapperDecorator.getDefaultSubAttributes(Account.class, propertyWrappers, "", new ArrayList<>(), true);
-		propertyWrappers = propertyWrappers.stream().distinct().collect(Collectors.toList());
-		paths = propertyWrappers.stream().map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList());
+		// Get minimal number of attributePaths for entity graph
+		List<GenericPropertyWrapper> propertyWrappers = getGenericPropertyWrappers(Account.class, attributePaths);
+		List<String> paths = propertyWrappers.stream().map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList());
 
-		List<GenericPropertyWrapper> finalPropertyWrappers = propertyWrappers;
+		// Fetch data
+		Account entity = this.accountRepository.findById(id, paths.isEmpty() ? EntityGraphs.empty() : EntityGraphUtils
+				.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]))).orElseThrow(() -> new RuntimeException("Some exception"));
+
+		// Map properties
 		List<String> props = new ArrayList<>();
-
-		return universalMapper.toAccountDto(this.accountRepository.findById(id,
-				paths.isEmpty() ? EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])))
-				.orElseThrow(() -> new RuntimeException("Some exception")),
-				new StringBuilder(), finalPropertyWrappers, props, "");
+		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyWrappers, props, "");
 	}
 
 	@Transactional
 	public PageResponse<AccountDto> findAll(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
 		AccountDto example = prbe.getExample();
 
-		long startTime = System.nanoTime();
+		// Get minimal number of attributePaths for entity graph
+		List<GenericPropertyWrapper> propertyWrappers = getGenericPropertyWrappers(Account.class, attributePaths);
+		List<String> paths = propertyWrappers.stream().map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList());
 
-		List<String> paths = new ArrayList<>(Arrays.asList(attributePaths));
-		List<GenericPropertyWrapper> propertyWrappers = paths.stream().map(val ->
-				new GenericPropertyWrapper("", val, val)).collect(Collectors.toList());
-		GenericMapperDecorator.getDefaultSubAttributes(Account.class, propertyWrappers, "", new ArrayList<>(), true);
-		propertyWrappers = propertyWrappers.stream().distinct().collect(Collectors.toList());
-		paths = propertyWrappers.stream().map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList());
-
-		long endTime = System.nanoTime();
-		logger.info("Generation/traversal of paths took: {} ms", (endTime - startTime) / 1000000);
-
+		// Fetch data
 		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
 				EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])));
 
-		startTime = System.nanoTime();
-
-		List<GenericPropertyWrapper> finalPropertyWrappers = propertyWrappers;
+		// Map properties
 		List<String> props = new ArrayList<>();
-
-		List<AccountDto> content = new ArrayList<>(page.getContent()).stream()
-				.map(account -> universalMapper.toAccountDto(account, new StringBuilder(),
-						finalPropertyWrappers, props, "")).collect(Collectors.toList());
-
-		endTime = System.nanoTime();
-		logger.info("Mapping of paths took: {} ms", (endTime - startTime) / 1000000);
+		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page.getContent()),
+				new StringBuilder(), propertyWrappers, props, ""));
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}
-
 
 	private BooleanExpression makeFilter(AccountDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();

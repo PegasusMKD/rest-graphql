@@ -7,7 +7,7 @@ Content-Type: application/json
 }
 
 ####
-POST http://localhost:8080/users/page?attributePaths=posts, posts.comments, person, posts.postedBy
+POST http://localhost:8080/users/page?attributePaths=friends, posts
 Content-Type: application/json
 
 {

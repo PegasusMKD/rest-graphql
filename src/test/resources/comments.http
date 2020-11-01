@@ -1,0 +1,30 @@
+POST http://localhost:8080/users/comments
+Content-Type: application/json
+
+{
+  "example": {
+  },
+  "lazyLoadEvent": {
+    "first": 0,
+    "rows": 10000
+  }
+}
+
+####
+POST http://localhost:8080/users/comments
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}
+
+####
+
+POST http://localhost:8080/users/comments
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}

@@ -61,7 +61,7 @@ public abstract class GenericMapperDecorator {
 		List<Field> manyToOneObjParameterFields = Arrays.stream(_class.getDeclaredFields())
 				.filter(field -> field.getAnnotation(ManyToOne.class) != null &&
 						((first && properties.stream().map(GenericPropertyWrapper::getGraphPath)
-								.collect(Collectors.toList()).contains(field.getName())) ||
+								.collect(Collectors.toList()).contains(field.getName())) || !field.getAnnotation(ManyToOne.class).optional() ||
 						(!first && field.getAnnotation(ManyToOne.class).fetch() != FetchType.LAZY ||
 								!Arrays.equals(field.getAnnotation(ManyToOne.class).cascade(), new CascadeType[]{}) ||
 								properties.stream().map(GenericPropertyWrapper::getGraphPath)

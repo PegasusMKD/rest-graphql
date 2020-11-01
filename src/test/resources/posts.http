@@ -1,0 +1,26 @@
+POST http://localhost:8080/users/posts
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}
+
+####
+POST http://localhost:8080/users/posts?attributePaths=comments
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}
+
+####
+
+POST http://localhost:8080/users/posts
+Content-Type: application/json
+
+{
+  "example": {
+  }
+}

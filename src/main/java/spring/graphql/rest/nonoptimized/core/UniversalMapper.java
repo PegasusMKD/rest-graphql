@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring")
 public abstract class UniversalMapper {
 
 	@BeforeMapping
@@ -35,7 +35,7 @@ public abstract class UniversalMapper {
 
 	@AfterMapping
 	public void cleanPath(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
-						  @Context List<String> properties, @Context String property) {
+						  @Context List<String> properties) {
 		if(vals instanceof Collection || vals instanceof Map) {
 			return;
 		}

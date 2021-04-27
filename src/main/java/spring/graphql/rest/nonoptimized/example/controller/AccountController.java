@@ -10,6 +10,9 @@ import spring.graphql.rest.nonoptimized.example.dto.AccountDto;
 import spring.graphql.rest.nonoptimized.example.dto.CommentDto;
 import spring.graphql.rest.nonoptimized.example.dto.PostDto;
 import spring.graphql.rest.nonoptimized.example.service.AccountService;
+import spring.graphql.rest.nonoptimized.example.service.CommentService;
+import spring.graphql.rest.nonoptimized.example.service.DatabaseService;
+import spring.graphql.rest.nonoptimized.example.service.PostService;
 
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -19,8 +22,17 @@ public class AccountController {
 
 	private final AccountService accountService;
 
-	public AccountController(AccountService accountService) {
+	private final CommentService commentService;
+
+	private final PostService postService;
+
+	private final DatabaseService databaseService;
+
+	public AccountController(AccountService accountService, CommentService commentService, PostService postService, DatabaseService databaseService) {
 		this.accountService = accountService;
+		this.commentService = commentService;
+		this.postService = postService;
+		this.databaseService = databaseService;
 	}
 
 	@PostMapping(value = "/page")
@@ -71,7 +83,7 @@ public class AccountController {
 			prbe.setExample(new PostDto());
 		}
 
-		PageResponse<PostDto> ret = accountService.findAllPosts(prbe, attributePaths);
+		PageResponse<PostDto> ret = postService.findAllPosts(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
 	}
 
@@ -97,7 +109,7 @@ public class AccountController {
 			prbe.setExample(new CommentDto());
 		}
 
-		PageResponse<CommentDto> ret = accountService.findAllComments(prbe, attributePaths);
+		PageResponse<CommentDto> ret = commentService.findAllComments(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
 	}
 
@@ -113,7 +125,7 @@ public class AccountController {
 
 	@GetMapping
 	public void populateDatabase() {
-		accountService.populateDatabase();
+		databaseService.populateDatabase();
 	}
 
 }

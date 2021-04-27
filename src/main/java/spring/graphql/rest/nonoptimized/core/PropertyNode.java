@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class GenericPropertyWrapper {
+public class PropertyNode {
 	private String parentPropertyPath;
 	private String property;
 	private String graphPath;
+
+	private boolean oneToMany;
 }

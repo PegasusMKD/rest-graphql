@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
@@ -17,88 +15,84 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public abstract class GenericMapperDecorator {
 
-	public static <T> void getDefaultSubAttributes(Class<T> _class, List<GenericPropertyWrapper> properties, String currentPath, List<Class<?>> passedClasses, boolean first) {
+	public static <T> void getDefaultSubAttributes(Class<T> _class, List<PropertyNode> properties, String currentPath, List<Class<?>> passedClasses, boolean first) {
 
 		// One-To-One traversal
-		List<Field> oneToOneObjParameterFields = Arrays.stream(_class.getDeclaredFields())
-				.filter(field -> field.getAnnotation(OneToOne.class) != null &&
-						((first && (!field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
-								.map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList()).contains(field.getName())))
-								|| (!first && !field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
-								.map(GenericPropertyWrapper::getGraphPath).collect(Collectors.toList())
-								.contains(currentPath + "." + field.getName())))).collect(Collectors.toList());
-		for(Field oneToOne: oneToOneObjParameterFields) {
-			String tmpPath = first ? oneToOne.getName() : currentPath + "." + oneToOne.getName();
-			GenericPropertyWrapper propWrapper = new GenericPropertyWrapper();
-			propWrapper.setParentPropertyPath(currentPath);
-			propWrapper.setProperty(oneToOne.getName());
-			propWrapper.setGraphPath(tmpPath.trim());
-			properties.add(propWrapper);
-			getDefaultSubAttributes(oneToOne.getType(), properties, tmpPath, passedClasses, false);
-		}
+		List<Field> oneToOneProperties = Arrays.stream(_class.getDeclaredFields())
+				.filter(field -> filterEagerAndRequiredOneToOne(properties, currentPath, first, field)).collect(Collectors.toList());
+		oneToOneProperties.forEach(prop -> traverseProperties(prop.getType(), properties, currentPath, passedClasses, first, prop));
+
 
 		// One-To-Many Traversal
-		List<Field> oneToManyObjParameterFields = Arrays.stream(_class.getDeclaredFields())
-				.filter(field -> field.getAnnotation(OneToMany.class) != null &&
-						((first && properties.stream().map(GenericPropertyWrapper::getGraphPath)
-								.collect(Collectors.toList()).contains(field.getName()))
-						|| (!first && (field.getAnnotation(OneToMany.class).fetch() != FetchType.LAZY ||
-								properties.stream().map(GenericPropertyWrapper::getGraphPath)
-								.collect(Collectors.toList()).contains(currentPath + "." + field.getName())))))
+		List<Field> oneToManyProperties = Arrays.stream(_class.getDeclaredFields())
+				.filter(field -> filterEagerAndRequiredOneToMany(properties, currentPath, first, field))
 				.collect(Collectors.toList());
-		for(Field oneToMany: oneToManyObjParameterFields) {
-			String tmpPath = first ? oneToMany.getName() : currentPath + "." + oneToMany.getName();
-			GenericPropertyWrapper propWrapper = new GenericPropertyWrapper();
-			propWrapper.setParentPropertyPath(currentPath);
-			propWrapper.setProperty(oneToMany.getName());
-			propWrapper.setGraphPath(tmpPath.trim());
-			properties.add(propWrapper);
-			getDefaultSubAttributes(((Class<?>)((ParameterizedType)oneToMany.getGenericType())
-					.getActualTypeArguments()[0]), properties, tmpPath, passedClasses, false);
-		}
+
+		oneToManyProperties.forEach(prop ->
+				traverseProperties(getActualTypeArgument(prop), properties, currentPath, passedClasses, first, prop, true)
+		);
 
 		// Many-To-One Traversal
-		List<Field> manyToOneObjParameterFields = Arrays.stream(_class.getDeclaredFields())
-				.filter(field -> field.getAnnotation(ManyToOne.class) != null &&
-						((first && properties.stream().map(GenericPropertyWrapper::getGraphPath)
-								.collect(Collectors.toList()).contains(field.getName())) || !field.getAnnotation(ManyToOne.class).optional() ||
-						(!first && field.getAnnotation(ManyToOne.class).fetch() != FetchType.LAZY ||
-								!Arrays.equals(field.getAnnotation(ManyToOne.class).cascade(), new CascadeType[]{}) ||
-								properties.stream().map(GenericPropertyWrapper::getGraphPath)
-										.collect(Collectors.toList()).contains(currentPath + "." + field.getName()))))
+		List<Field> manyToOneProperties = Arrays.stream(_class.getDeclaredFields())
+				.filter(field -> filterEagerAndRequiredManyToOne(properties, currentPath, first, field))
 				.collect(Collectors.toList());
-		for(Field manyToOne: manyToOneObjParameterFields) {
-			String tmpPath = first ? manyToOne.getName() : currentPath + "." + manyToOne.getName();
-			GenericPropertyWrapper propWrapper = new GenericPropertyWrapper();
-			propWrapper.setParentPropertyPath(currentPath);
-			propWrapper.setProperty(manyToOne.getName());
-			propWrapper.setGraphPath(tmpPath.trim());
-			properties.add(propWrapper);
-			getDefaultSubAttributes(manyToOne.getType(), properties, tmpPath, passedClasses, false);
-		}
+
+		manyToOneProperties.forEach(prop -> traverseProperties(prop.getType(), properties, currentPath, passedClasses, first, prop));
 	}
 
-	public <T, K> void emptyModels(T entity, K dto) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		List<Field> entityColumnFields = Arrays.stream(entity.getClass().getDeclaredFields())
-				.filter(field -> field.getAnnotation(JoinColumn.class) != null).collect(Collectors.toList());
-		for (Field entityField : entityColumnFields) {
-			Method dtoGetter = dto.getClass().getMethod("get" + capitalize(entityField.getName()));
-			Method entityGetter = entity.getClass().getMethod("get" + capitalize(entityField.getName()));
-			Method entitySetter = entity.getClass().getMethod("set" + capitalize(entityField.getName()), entityGetter.getReturnType());
-			Method entityIsIdSet = entityGetter.getReturnType().getMethod("isIdSet");
-			Method dtoIsIdSet = dtoGetter.getReturnType().getMethod("isIdSet");
+	private static boolean filterEagerAndRequiredManyToOne(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
+		return field.getAnnotation(ManyToOne.class) != null &&
+				((first && properties.stream().map(PropertyNode::getGraphPath)
+						.collect(Collectors.toList()).contains(field.getName())) || !field.getAnnotation(ManyToOne.class).optional() ||
+						(!first && field.getAnnotation(ManyToOne.class).fetch() != FetchType.LAZY ||
+								!Arrays.equals(field.getAnnotation(ManyToOne.class).cascade(), new CascadeType[]{}) ||
+								properties.stream().map(PropertyNode::getGraphPath)
+										.collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
+	}
 
-			Object dtoObject = dtoGetter.invoke(dto);
-			Object entityObject = entityGetter.invoke(entity);
+	private static boolean filterEagerAndRequiredOneToMany(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
+		return field.getAnnotation(OneToMany.class) != null &&
+				((first && properties.stream().map(PropertyNode::getGraphPath)
+						.collect(Collectors.toList()).contains(field.getName()))
+						|| (!first && (field.getAnnotation(OneToMany.class).fetch() != FetchType.LAZY ||
+						properties.stream().map(PropertyNode::getGraphPath)
+								.collect(Collectors.toList()).contains(currentPath + "." + field.getName()))));
+	}
 
-			if (dtoObject != null && entityObject != null
-					&& ((boolean) dtoIsIdSet.invoke(dtoObject)) &&
-					((boolean) entityIsIdSet.invoke(entityObject))) {
-				Object empty = null;
-				entitySetter.invoke(entity, empty);
-			}
-		}
+	private static boolean filterEagerAndRequiredOneToOne(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
+		return field.getAnnotation(OneToOne.class) != null &&
+				((first && (!field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
+						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(field.getName())))
+						|| (!first && !field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
+						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
+	}
 
+	private static Class<?> getActualTypeArgument(Field val) {
+		return (Class<?>) ((ParameterizedType) val.getGenericType()).getActualTypeArguments()[0];
+	}
+
+	private static void traverseProperties(Class<?> type, List<PropertyNode> properties, String currentPath,
+										   List<Class<?>> passedClasses, boolean first, Field field) {
+		traverseProperties(type, properties, currentPath, passedClasses, first, field, false);
+	}
+
+	private static void traverseProperties(Class<?> type, List<PropertyNode> properties, String currentPath,
+										   List<Class<?>> passedClasses, boolean first, Field field, boolean oneToMany) {
+		// Generate tree path
+		String tmpPath = first ? field.getName() : currentPath + "." + field.getName();
+
+		// Create class for holding the node
+		PropertyNode propWrapper = new PropertyNode();
+		propWrapper.setParentPropertyPath(currentPath);
+		propWrapper.setProperty(field.getName());
+		propWrapper.setGraphPath(tmpPath.trim());
+		propWrapper.setOneToMany(oneToMany);
+
+		// Add node
+		properties.add(propWrapper);
+
+		// Iterate recursively
+		getDefaultSubAttributes(type, properties, tmpPath, passedClasses, false);
 	}
 
 	private static String capitalize(String text) {

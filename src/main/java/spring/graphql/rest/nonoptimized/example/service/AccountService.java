@@ -61,7 +61,7 @@ public class AccountService {
 		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyNodes, props, "");
 	}
 
-	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) throws NoSuchMethodException {
+	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
 		AccountDto example = prbe.getExample();
 
 		// Get minimal number of attributePaths for entity graph

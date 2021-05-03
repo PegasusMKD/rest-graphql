@@ -37,7 +37,7 @@ public class AccountController {
 
 	@PostMapping(value = "/page")
 	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestParam(required = false) String[] attributePaths,
-															@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) {
+															@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) throws NoSuchMethodException {
 		if(prbe == null) {
 			prbe = new PageRequestByExample<>();
 		}

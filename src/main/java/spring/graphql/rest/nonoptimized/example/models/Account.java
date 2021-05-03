@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
+import spring.graphql.rest.nonoptimized.core.processing.Identifiable;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -14,9 +15,9 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity(name = "Account")
 @Table(name = "account")
-@EqualsAndHashCode(exclude = {"posts", "friends", "person"})
+@EqualsAndHashCode(exclude = {"posts", "friends", "person"}, callSuper = true)
 @ToString(exclude = {"posts", "friends", "person"})
-public class Account {
+public class Account extends Identifiable {
 
 	@Column(name = "id", length = 32)
 	@GeneratedValue(generator = "strategy-uuid")

@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static spring.graphql.rest.nonoptimized.GenericsHelper.getActualTypeArgument;
+
 @Repository
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public abstract class GenericMapperDecorator {
@@ -67,9 +69,7 @@ public abstract class GenericMapperDecorator {
 						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
 	}
 
-	private static Class<?> getActualTypeArgument(Field val) {
-		return (Class<?>) ((ParameterizedType) val.getGenericType()).getActualTypeArguments()[0];
-	}
+
 
 	private static void traverseProperties(Class<?> type, List<PropertyNode> properties, String currentPath,
 										   List<Class<?>> passedClasses, boolean first, Field field) {
@@ -94,9 +94,4 @@ public abstract class GenericMapperDecorator {
 		// Iterate recursively
 		getDefaultSubAttributes(type, properties, tmpPath, passedClasses, false);
 	}
-
-	private static String capitalize(String text) {
-		return text.substring(0, 1).toUpperCase() + text.substring(1);
-	}
-
 }

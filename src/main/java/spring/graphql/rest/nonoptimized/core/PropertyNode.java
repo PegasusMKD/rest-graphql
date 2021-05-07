@@ -10,7 +10,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PropertyNode {
-	private String id;
+	private String id = UUID.randomUUID().toString();
 
 	private String parentPropertyPath;
 	private String property;

@@ -59,16 +59,16 @@ public class RQLMainProcessingUnit {
 			return;
 		}
 
-		MethodHandle setter = LOOKUP.findVirtual(data.get(0).getClass(), "set" + Helpers.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
+		MethodHandle setChildren = LOOKUP.findVirtual(data.get(0).getClass(), "set" + Helpers.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 		MethodHandle getParent = LOOKUP.findVirtual(children.get(0).getClass(), "get" + Helpers.capitalize(parentProp), MethodType.methodType(data.get(0).getClass()));
 
-		data.forEach(v -> mapChildrenToParentHandle(getId, children, setter, getParent, v));
+		data.forEach(v -> mapChildrenToParentHandle(getId, children, setChildren, getParent, v));
 	}
 
-	private <T> void mapChildrenToParentHandle(MethodHandle getId, List<?> children, MethodHandle setter, MethodHandle getParent, T v) {
+	private <T> void mapChildrenToParentHandle(MethodHandle getId, List<?> children, MethodHandle setChildren, MethodHandle getParent, T v) {
 		try {
 			Set<?> fetchedData = children.stream().filter(p -> findChildrenByParentHandle(getId, getParent, v, p)).collect(Collectors.toSet());
-			setter.invoke(v, fetchedData);
+			setChildren.invoke(v, fetchedData);
 			children.removeAll(fetchedData);
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -78,7 +78,6 @@ public class RQLMainProcessingUnit {
 	private <T> boolean findChildrenByParentHandle(MethodHandle getId, MethodHandle getParent, T v, Object p) {
 		try {
 			return (getId.invoke(getParent.invoke(p))).equals(getId.invoke(v));
-			// test
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new RuntimeException();

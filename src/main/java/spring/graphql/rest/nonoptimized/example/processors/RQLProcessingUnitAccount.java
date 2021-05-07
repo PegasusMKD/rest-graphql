@@ -30,13 +30,6 @@ public class RQLProcessingUnitAccount {
 		// TODO: Just call generic fetch with method from this repo
 		List<String> dataIds = data.stream().map(Account::getId).collect(Collectors.toList());
 		List<Account> res = rqlAccountRepository.findAllByFriends_IdIn(dataIds);
-
-		// TODO: Map out the results and then return the mapped out data
-		HashMap<String, List<Account>> dataMap = new HashMap<>();
-		for(Account item: res) {
-
-		}
-
 		return data;
 	}
 

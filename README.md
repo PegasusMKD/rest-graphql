@@ -39,17 +39,17 @@
 
 ## Planned improvements
  Things which are currently being worked on:
- - Implementing partitioning & threading of data while mapping it out
+ - ***Implementing partitioning & threading of data while mapping it out***
    - For example, if we have 1 million records which we'd need to map out to their corresponding parents,
      we'd partition them in collections of 50000, open threads for each collection & then start mapping them
      out simultaneously
- - Properly packaging the code-base
- - Automatically generating required mappers, repositories & processing units using Google's auto-processor
- - Adding customizations
+ - ***Properly packaging the code-base***
+ - ***Automatically generating required mappers, repositories & processing units using Google's auto-processor***
+ - ***Adding customizations***
     - Restricting which properties are allowed to be fetched using
       the GraphQL functionalities
- - Proper documentation
- - Proper Many-To-Many support
+ - ***Proper documentation***
+ - ***Proper Many-To-Many support***
 
 ## Performance
  - Cartesian Product

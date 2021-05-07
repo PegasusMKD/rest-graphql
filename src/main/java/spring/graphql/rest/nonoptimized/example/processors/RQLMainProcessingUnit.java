@@ -78,6 +78,7 @@ public class RQLMainProcessingUnit {
 	private <T> boolean findChildrenByParentHandle(MethodHandle getId, MethodHandle getParent, T v, Object p) {
 		try {
 			return (getId.invoke(getParent.invoke(p))).equals(getId.invoke(v));
+			// test
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new RuntimeException();

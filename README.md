@@ -1,9 +1,9 @@
 # RQL
-### This is a library meant to solve issues regarding *Spring Data JPA* & *general database issues* such as:
+ This is a library meant to solve issues regarding *Spring Data JPA* & *general database issues* such as:
  - n+1 issues
  - Cartesian products
 
-### Beside solving the mentioned issues, it also brings:
+ Beside solving the mentioned issues, it also brings:
  - GraphQL-like features on a REST interface
 
 ## Inner workings

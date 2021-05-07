@@ -70,9 +70,7 @@ public class AccountService {
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
-
 		boolean containsRelation = false;
-
 		if(paths.contains("posts") && paths.contains("friends")) {
 			paths.removeIf(val -> val.contains("posts"));
 			containsRelation = true;
@@ -90,8 +88,6 @@ public class AccountService {
 		startTime = System.nanoTime();
 		if(containsRelation) {
 			rqlMainProcessingUnit.process(page.getContent(), propertyNodes.stream().filter(val -> val.getProperty().equals("posts")).findAny().get(), propertyNodes);
-			paths.add("posts");
-			paths.add("posts.postedBy");
 		}
 		endTime = System.nanoTime();
 		logger.info("Fetch posts: {} ms -- Posts", (endTime - startTime) / 1000000);

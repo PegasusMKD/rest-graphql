@@ -37,7 +37,7 @@ public class AccountController {
 
 	@PostMapping(value = "/page")
 	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestParam(required = false) String[] attributePaths,
-															@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
+															@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) throws NoSuchMethodException, IllegalAccessException {
 		if(prbe == null) {
 			prbe = new PageRequestByExample<>();
 		}
@@ -63,7 +63,7 @@ public class AccountController {
 
 	@PostMapping(value = "/posts")
 	public ResponseEntity<PageResponse<PostDto>> findAllPosts(@RequestParam(required = false) String[] attributePaths,
-															@RequestBody(required = false) PageRequestByExample<PostDto> prbe) {
+															@RequestBody(required = false) PageRequestByExample<PostDto> prbe) throws NoSuchMethodException, IllegalAccessException {
 		if(prbe == null) {
 			prbe = new PageRequestByExample<>();
 		}

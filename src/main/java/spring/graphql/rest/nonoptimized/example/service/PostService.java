@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
@@ -16,6 +17,7 @@ import spring.graphql.rest.nonoptimized.example.dto.PostDto;
 import spring.graphql.rest.nonoptimized.example.mappers.PostMapper;
 import spring.graphql.rest.nonoptimized.example.models.Post;
 import spring.graphql.rest.nonoptimized.example.models.QPost;
+import spring.graphql.rest.nonoptimized.example.processors.RQLMainProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
 
 import javax.transaction.Transactional;
@@ -38,10 +40,13 @@ public class PostService {
 
 	private final AccountService accountService;
 
-	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService) {
+	private final RQLMainProcessingUnit rqlMainProcessingUnit;
+
+	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService, RQLMainProcessingUnit rqlMainProcessingUnit) {
 		this.postRepository = postRepository;
 		this.postMapper = postMapper;
 		this.accountService = accountService;
+		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
 	}
 
 	private BooleanExpression makeFilter(PostDto dto) {
@@ -61,8 +66,7 @@ public class PostService {
 				.notEmptyAnd(qPost.content::containsIgnoreCase, dto.getContent());
 	}
 
-	@Transactional
-	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) {
+	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) throws NoSuchMethodException, IllegalAccessException {
 		PostDto example = prbe.getExample();
 
 		// Get minimal number of attributePaths for entity graph
@@ -72,9 +76,23 @@ public class PostService {
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Posts", (endTime - startTime) / 1000000);
 
+		boolean containsRelation = false;
+
+		if(paths.contains("comments")) {
+			paths.removeIf(val -> val.contains("comments"));
+			containsRelation = true;
+		}
+
 		// Fetch data
 		Page<Post> page = postRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
 				EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])));
+
+		startTime = System.nanoTime();
+		if(containsRelation) {
+			rqlMainProcessingUnit.process(page.getContent(), propertyNodes.stream().filter(val -> val.getProperty().equals("comments")).findAny().get(), propertyNodes);
+		}
+		endTime = System.nanoTime();
+		logger.info("Fetch posts: {} ms -- Posts", (endTime - startTime) / 1000000);
 
 		// Map properties
 		startTime = System.nanoTime();

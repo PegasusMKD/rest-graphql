@@ -47,12 +47,30 @@ public class GraphHelpers {
 		return propertyNodes.stream().map(PropertyNode::getGraphPath).distinct().collect(Collectors.toList());
 	}
 
-	public static String lowerPath(String path) {
-		return path.substring(path.indexOf(".") + 1);
+	public static String lowerPath(String path, String parentPath) {
+		return path.substring(parentPath.length() + 1);
 	}
 
 	public static EntityGraph getEntityGraph(List<String> paths) {
 		return paths.isEmpty() ? EntityGraphs.empty() :
 				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
+	}
+
+	public static List<PropertyNode> getSubTree(List<PropertyNode> tree, PropertyNode node) {
+		return tree.stream()
+				.filter(val -> !val.isCompleted())
+				.filter(val -> val.getParentPropertyPath().contains(node.getProperty()))
+				.collect(Collectors.toList());
+	}
+
+	public static void completeNode(PropertyNode node, List<PropertyNode> currentTree, PropertyNode el) {
+		if(currentTree.contains(el) || el.getGraphPath().equals(node.getGraphPath())) {
+			el.setCompleted(true);
+		}
+	}
+
+	public static List<String> getProcessedPaths(List<PropertyNode> currentTree, PropertyNode node) {
+		List<String> paths = getPaths(currentTree).stream().filter(val -> val.contains(node.getGraphPath())).collect(Collectors.toList());
+		return paths.stream().map(p -> lowerPath(p, node.getGraphPath())).collect(Collectors.toList());
 	}
 }

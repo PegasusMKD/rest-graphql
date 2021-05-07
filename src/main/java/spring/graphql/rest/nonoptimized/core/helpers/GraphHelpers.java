@@ -53,7 +53,7 @@ public class GraphHelpers {
 
 	public static EntityGraph getEntityGraph(List<String> paths) {
 		return paths.isEmpty() ? EntityGraphs.empty() :
-				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
+				EntityGraphUtils.fromAttributePaths(EntityGraphType.FETCH, paths.toArray(new String[0]));
 	}
 
 	public static List<PropertyNode> getSubTree(List<PropertyNode> tree, PropertyNode node) {

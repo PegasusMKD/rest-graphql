@@ -14,8 +14,8 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity(name = "Account")
 @Table(name = "account")
-@EqualsAndHashCode(exclude = {"posts", "friends", "person"})
-@ToString(exclude = {"posts", "friends", "person"})
+@EqualsAndHashCode(exclude = {"posts", "friends", "person", "comments"})
+@ToString(exclude = {"posts", "friends", "person", "comments"})
 public class Account {
 
 	@Column(name = "id", length = 32)
@@ -37,5 +37,6 @@ public class Account {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "postedBy")
 	private Set<Post> posts = new HashSet<>();
 
-
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "account")
+	private Set<Comment> comments = new HashSet<>();
 }

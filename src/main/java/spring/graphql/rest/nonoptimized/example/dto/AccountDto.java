@@ -14,4 +14,5 @@ public class AccountDto {
 	private PersonDto person;
 	private Set<AccountDto> friends = new HashSet<>();
 	private Set<PostDto> posts = new HashSet<>();
+	private Set<CommentDto> comments = new HashSet<>();
 }

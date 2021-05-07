@@ -33,7 +33,7 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
 		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
 
-		List<Comment> res = rqlCommentRepository.findAllByPostIdIn(data, GraphHelpers.getEntityGraph(paths));
+		List<Comment> res = rqlCommentRepository.findAllByAccountIdIn(data, GraphHelpers.getEntityGraph(paths));
 		subTree.forEach(el -> completeNode(node, currentTree, el));
 
 		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {

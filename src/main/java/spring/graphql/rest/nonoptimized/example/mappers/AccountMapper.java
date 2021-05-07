@@ -24,6 +24,9 @@ public abstract class AccountMapper {
 	@Autowired
 	protected PersonMapper personMapper;
 
+	@Autowired
+	protected CommentMapper commentMapper;
+
 
 	@IterableMapping(qualifiedByName = "dynamicAccounts")
 	public abstract Set<AccountDto> toAccountDtos(Set<Account> entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
@@ -31,6 +34,7 @@ public abstract class AccountMapper {
 	@Named("dynamicAccounts")
 	@Mapping(target = "friends", expression = "java(properties.contains(\"friends\") ? accountMapper.toAccountDtos(entity.getFriends(), currentPath, propertyNodes, properties, \"friends\") : null)")
 	@Mapping(target = "posts", expression = "java(properties.contains(\"posts\") ? postMapper.toPostDtos(entity.getPosts(), currentPath, propertyNodes, properties, \"posts\") : null)")
+	@Mapping(target = "comments", expression = "java(properties.contains(\"comments\") ? commentMapper.toCommentDtos(entity.getComments(), currentPath, propertyNodes, properties, \"comments\") : null)")
 	@Mapping(target = "person", expression = "java(properties.contains(\"person\") ? personMapper.toPersonDto(entity.getPerson(), currentPath, propertyNodes, properties, \"person\") : null)")
 	public abstract AccountDto toAccountDto(Account entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 }

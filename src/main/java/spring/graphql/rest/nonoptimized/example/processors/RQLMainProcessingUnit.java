@@ -3,6 +3,7 @@ package spring.graphql.rest.nonoptimized.example.processors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.helpers.Helpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
@@ -30,6 +31,7 @@ public class RQLMainProcessingUnit {
 		this.processingUnitDistributor = processingUnitDistributor;
 	}
 
+	@Transactional(readOnly = true)
 	public <T> void process(List<T> data, PropertyNode node, List<PropertyNode> tree) throws NoSuchMethodException, IllegalAccessException {
 		if (data.size() == 0) {
 			return;

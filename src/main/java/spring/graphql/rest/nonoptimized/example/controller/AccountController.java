@@ -1,5 +1,7 @@
 package spring.graphql.rest.nonoptimized.example.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,8 @@ public class AccountController {
 	private final PostService postService;
 
 	private final DatabaseService databaseService;
+
+	private Logger logger = LoggerFactory.getLogger(AccountController.class);
 
 	public AccountController(AccountService accountService, CommentService commentService, PostService postService, DatabaseService databaseService) {
 		this.accountService = accountService;
@@ -56,8 +60,10 @@ public class AccountController {
 		if(prbe.getExample() == null) {
 			prbe.setExample(new AccountDto());
 		}
-
+		long startTime = System.nanoTime();
 		PageResponse<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
+		long endTime = System.nanoTime();
+		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
 		return ResponseEntity.ok(ret);
 	}
 

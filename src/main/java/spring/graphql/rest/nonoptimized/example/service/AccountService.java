@@ -135,8 +135,6 @@ public class AccountService {
 				.notEmptyAnd(qAccount.username::containsIgnoreCase, dto.getUsername());
 	}
 
-	// Making these other filters here since I'm too lazy to make seperate services
-
 	public OptionalBooleanBuilder makeFilter(PersonDto dto, Optional<QPerson> _qPerson, Optional<OptionalBooleanBuilder> _opBuilder) {
 		QPerson qPerson = _qPerson.orElse(QPerson.person);
 		OptionalBooleanBuilder opBuilder = _opBuilder.orElse(OptionalBooleanBuilder.builder(qPerson.isNotNull()));

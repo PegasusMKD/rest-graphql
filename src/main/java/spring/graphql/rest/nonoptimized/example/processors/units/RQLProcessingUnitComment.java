@@ -2,6 +2,7 @@ package spring.graphql.rest.nonoptimized.example.processors.units;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
@@ -27,7 +28,19 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
+		switch (propertyToParent) {
+			case "account":
+				return processAccount(tree, data, node, propertyToParent);
+			case "post":
+				return processPost(tree, data, node, propertyToParent);
+		}
+
+		throw new RuntimeException();
+	}
+
+	private TransferResultDto<Comment> processAccount(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
 		List<PropertyNode> subTree = getSubTree(tree, node);
 
 		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
@@ -42,4 +55,21 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 		return new TransferResultDto<>(propertyToParent, res);
 	}
+
+	private TransferResultDto<Comment> processPost(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
+		List<PropertyNode> subTree = getSubTree(tree, node);
+
+		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
+		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
+
+		List<Comment> res = rqlCommentRepository.findAllByPostIdIn(data, GraphHelpers.getEntityGraph(paths));
+		subTree.forEach(el -> completeNode(node, currentTree, el));
+
+		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {
+			// TODO: Implement generic function for fetch/processingUnit call
+		}
+
+		return new TransferResultDto<>(propertyToParent, res);
+	}
+
 }

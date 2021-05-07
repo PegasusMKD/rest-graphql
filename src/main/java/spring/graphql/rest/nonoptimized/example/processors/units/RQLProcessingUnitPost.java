@@ -2,6 +2,7 @@ package spring.graphql.rest.nonoptimized.example.processors.units;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
@@ -33,6 +34,7 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public TransferResultDto<Post> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
 		List<PropertyNode> subTree = getSubTree(tree, node);
 

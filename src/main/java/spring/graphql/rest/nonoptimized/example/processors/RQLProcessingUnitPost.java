@@ -6,9 +6,9 @@ import spring.graphql.rest.nonoptimized.core.Helpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.models.Post;
+import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.example.processors.repository.RQLPostRepository;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,24 +20,20 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQLPostRepository rqlPostRepository;
 
-
 	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository) {
 		this.rqlPostRepository = rqlPostRepository;
 	}
 
 	@Override
-	public HashMap<String, Object> process(List<PropertyNode> tree, Set<String> data, PropertyNode node) {
-		HashMap<String, Object> result = new HashMap<>();
-
-
+	public TransferResultDto<Post> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
 		List<PropertyNode> subTree = tree.stream()
 				.filter(val -> !val.isCompleted())
 				.filter(val -> val.getParentPropertyPath().contains(node.getProperty()))
 				.collect(Collectors.toList());
 
 		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-		List<String> paths = Helpers.getPaths(currentTree).stream().filter(val -> val.equals(node.getGraphPath())).collect(Collectors.toList());
-		paths.forEach(Helpers::lowerPath);
+		List<String> paths = Helpers.getPaths(currentTree).stream().filter(val -> val.contains(node.getGraphPath())).collect(Collectors.toList());
+		paths = paths.stream().map(Helpers::lowerPath).collect(Collectors.toList());
 
 		List<Post> res = rqlPostRepository.findAllByPostedByIdIn(data, Helpers.getEntityGraph(paths));
 		subTree.forEach(el -> {
@@ -50,9 +46,6 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 			// TODO: Implement generic function for fetch/processingUnit call
 		}
 
-		result.put("parent", "postedBy");
-		result.put("data", res);
-
-		return result;
+		return new TransferResultDto<>(propertyToParent, res);
 	}
 }

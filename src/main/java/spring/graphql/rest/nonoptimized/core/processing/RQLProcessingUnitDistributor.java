@@ -13,7 +13,7 @@ public class RQLProcessingUnitDistributor {
 		this.beanFactory = beanFactory;
 	}
 
-	public <T> RQLProcessingUnit<T> findProcessingUnit(Class<T> _clazz) {
+	public RQLProcessingUnit<?> findProcessingUnit(Class<?> _clazz) {
 		return beanFactory.getBean("RQLProcessingUnit" + _clazz.getSimpleName(), RQLProcessingUnit.class);
 	}
 

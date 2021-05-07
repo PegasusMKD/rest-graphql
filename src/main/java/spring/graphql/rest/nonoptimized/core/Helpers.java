@@ -46,7 +46,7 @@ public class Helpers {
 	}
 
 	public static String lowerPath(String path) {
-		return path.substring(path.indexOf("."));
+		return path.substring(path.indexOf(".") + 1);
 	}
 
 	public static EntityGraph getEntityGraph(List<String> paths) {

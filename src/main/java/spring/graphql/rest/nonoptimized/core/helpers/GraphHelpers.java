@@ -1,9 +1,11 @@
-package spring.graphql.rest.nonoptimized.core;
+package spring.graphql.rest.nonoptimized.core.helpers;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
+import spring.graphql.rest.nonoptimized.core.PropertyNodeTraversal;
+import spring.graphql.rest.nonoptimized.core.PropertyNode;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
@@ -13,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Helpers {
+public class GraphHelpers {
 
 	public static List<PropertyNode> getGenericPropertyWrappers(Class<?> _clazz, String[] attributePaths) {
 		List<String> paths = new ArrayList<>(Arrays.asList(attributePaths));
@@ -22,7 +24,7 @@ public class Helpers {
 		List<PropertyNode> propertyWrappers = paths.stream().map(val ->
 				createPropertyNode(fields, val)).collect(Collectors.toList());
 
-		GenericMapperDecorator.getDefaultSubAttributes(_clazz,
+		PropertyNodeTraversal.getDefaultSubAttributes(_clazz,
 				propertyWrappers, "", new ArrayList<>(), true);
 
 		return propertyWrappers.stream().distinct().collect(Collectors.toList());
@@ -52,9 +54,5 @@ public class Helpers {
 	public static EntityGraph getEntityGraph(List<String> paths) {
 		return paths.isEmpty() ? EntityGraphs.empty() :
 				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
-	}
-
-	public static String capitalize(String data) {
-		return data.substring(0,1).toUpperCase() + data.substring(1);
 	}
 }

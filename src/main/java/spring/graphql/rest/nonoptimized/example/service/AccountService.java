@@ -1,12 +1,11 @@
 package spring.graphql.rest.nonoptimized.example.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.Helpers;
+import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
@@ -23,7 +22,7 @@ import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.Helpers.getGenericPropertyWrappers;
+import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
 
 
 @Service
@@ -54,20 +53,20 @@ public class AccountService {
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
-		Account entity = accountRepository.findById(id, Helpers.getEntityGraph(paths)).orElseThrow(() -> new RuntimeException("Some exception"));
+		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths)).orElseThrow(() -> new RuntimeException("Some exception"));
 
 		// Map properties
 		List<String> props = new ArrayList<>();
 		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyNodes, props, "");
 	}
 
-	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
+	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) throws NoSuchMethodException, IllegalAccessException {
 		AccountDto example = prbe.getExample();
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
-		List<String> paths = Helpers.getPaths(propertyNodes);
+		List<String> paths = GraphHelpers.getPaths(propertyNodes);
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
@@ -80,7 +79,7 @@ public class AccountService {
 		}
 
 		// Fetch data
-		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), Helpers.getEntityGraph(paths));
+		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), GraphHelpers.getEntityGraph(paths));
 
 		for(PropertyNode node: propertyNodes) {
 			if(paths.contains(node.getGraphPath())) {

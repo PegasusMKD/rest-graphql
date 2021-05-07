@@ -6,16 +6,13 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.GenericsHelper.getActualTypeArgument;
+import static spring.graphql.rest.nonoptimized.core.helpers.GenericsHelper.getActualTypeArgument;
 
-@Repository
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public abstract class GenericMapperDecorator {
+public abstract class PropertyNodeTraversal {
 
 	public static <T> void getDefaultSubAttributes(Class<T> _class, List<PropertyNode> properties, String currentPath, List<Class<?>> passedClasses, boolean first) {
 
@@ -68,8 +65,6 @@ public abstract class GenericMapperDecorator {
 						|| (!first && !field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
 						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
 	}
-
-
 
 	private static void traverseProperties(Class<?> type, List<PropertyNode> properties, String currentPath,
 										   List<Class<?>> passedClasses, boolean first, Field field) {

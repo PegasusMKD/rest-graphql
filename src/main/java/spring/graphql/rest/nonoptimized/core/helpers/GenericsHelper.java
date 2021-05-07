@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized;
+package spring.graphql.rest.nonoptimized.core.helpers;
 
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.example.processors.dto.ClassAndPropertyDto;
@@ -28,8 +28,6 @@ public class GenericsHelper {
 		Field prop = Arrays.stream(parentClass.getDeclaredFields())
 				.filter(field -> field.getName().equals(node.getProperty()))
 				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!"));
-
-
 
 		return new ClassAndPropertyDto(GenericsHelper.getActualTypeArgument(prop), prop.getAnnotation(OneToMany.class).mappedBy());
 	}

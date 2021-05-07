@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.Helpers.getGenericPropertyWrappers;
+import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
 
 @Service
 public class CommentService {

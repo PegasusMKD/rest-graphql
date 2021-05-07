@@ -2,7 +2,7 @@ package spring.graphql.rest.nonoptimized.example.processors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.Helpers;
+import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.models.Post;
@@ -32,10 +32,10 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 				.collect(Collectors.toList());
 
 		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-		List<String> paths = Helpers.getPaths(currentTree).stream().filter(val -> val.contains(node.getGraphPath())).collect(Collectors.toList());
-		paths = paths.stream().map(Helpers::lowerPath).collect(Collectors.toList());
+		List<String> paths = GraphHelpers.getPaths(currentTree).stream().filter(val -> val.contains(node.getGraphPath())).collect(Collectors.toList());
+		paths = paths.stream().map(GraphHelpers::lowerPath).collect(Collectors.toList());
 
-		List<Post> res = rqlPostRepository.findAllByPostedByIdIn(data, Helpers.getEntityGraph(paths));
+		List<Post> res = rqlPostRepository.findAllByPostedByIdIn(data, GraphHelpers.getEntityGraph(paths));
 		subTree.forEach(el -> {
 			if(currentTree.contains(el) || el.getGraphPath().equals(node.getGraphPath())) {
 				el.setCompleted(true);

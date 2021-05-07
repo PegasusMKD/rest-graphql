@@ -3,7 +3,7 @@ package spring.graphql.rest.nonoptimized.example.processors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.Helpers;
+import spring.graphql.rest.nonoptimized.core.helpers.Helpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnitDistributor;
@@ -16,7 +16,7 @@ import java.lang.invoke.MethodType;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.GenericsHelper.*;
+import static spring.graphql.rest.nonoptimized.core.helpers.GenericsHelper.*;
 
 @Service
 public class RQLMainProcessingUnit {

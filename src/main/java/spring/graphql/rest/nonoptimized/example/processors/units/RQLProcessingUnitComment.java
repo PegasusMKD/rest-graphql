@@ -30,46 +30,29 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 	@Override
 	@Transactional(readOnly = true)
 	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
+		List<PropertyNode> subTree = getSubTree(tree, node);
+
+		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
+		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
+		List<Comment> res = callProperQuery(propertyToParent, data, paths);
+		subTree.forEach(el -> completeNode(node, currentTree, el));
+
+		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {
+			// TODO: Implement generic function for fetch/processingUnit call
+		}
+
+		return new TransferResultDto<>(propertyToParent, res);
+	}
+
+	private List<Comment> callProperQuery(String propertyToParent, Set<String> data, List<String> paths) {
 		switch (propertyToParent) {
 			case "account":
-				return processAccount(tree, data, node, propertyToParent);
+				return rqlCommentRepository.findAllByAccountIdIn(data, GraphHelpers.getEntityGraph(paths));
 			case "post":
-				return processPost(tree, data, node, propertyToParent);
+				return rqlCommentRepository.findAllByPostIdIn(data, GraphHelpers.getEntityGraph(paths));
 		}
 
 		throw new RuntimeException();
-	}
-
-	private TransferResultDto<Comment> processAccount(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
-		List<PropertyNode> subTree = getSubTree(tree, node);
-
-		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
-
-		List<Comment> res = rqlCommentRepository.findAllByAccountIdIn(data, GraphHelpers.getEntityGraph(paths));
-		subTree.forEach(el -> completeNode(node, currentTree, el));
-
-		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {
-			// TODO: Implement generic function for fetch/processingUnit call
-		}
-
-		return new TransferResultDto<>(propertyToParent, res);
-	}
-
-	private TransferResultDto<Comment> processPost(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
-		List<PropertyNode> subTree = getSubTree(tree, node);
-
-		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
-
-		List<Comment> res = rqlCommentRepository.findAllByPostIdIn(data, GraphHelpers.getEntityGraph(paths));
-		subTree.forEach(el -> completeNode(node, currentTree, el));
-
-		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {
-			// TODO: Implement generic function for fetch/processingUnit call
-		}
-
-		return new TransferResultDto<>(propertyToParent, res);
 	}
 
 }

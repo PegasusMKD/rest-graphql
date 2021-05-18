@@ -57,3 +57,7 @@
      lowered to ~1s execution time
        - The query fetches 1 parent with 2 properties (which are collections) 
          or in total 40200 records (each collection totals 20000 records)
+ - Big collection fetch
+   - If I try to fetch 200 Posts & their sub-collections using only JOINs (defaulted by Spring Data)
+    it takes ~60s to fetch & parse the data, while with the functionality, I get ~5s
+     

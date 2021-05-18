@@ -5,6 +5,7 @@
 
  Beside solving the mentioned issues, it also brings:
  - GraphQL-like features on a REST interface
+ - Generally better performance for fetching big relations (~10x)
 
 ## Inner workings
  This is achieved through pre-processing of the entities using reflection to check which

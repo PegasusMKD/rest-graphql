@@ -9,8 +9,8 @@
 
 ## Inner workings
  This is achieved through pre-processing of the entities using reflection to check which
- properties will be fetched eagerly (due to bad configurations of annotations), then
- dynamically creating an entity graph to fetch those properties eagerly, instead of having the n+1 issues.
+ properties will be fetched eagerly (due to bad configurations of annotations or requirements by the sent arguments), then
+ dynamically creating an entity-graph to fetch those properties eagerly, instead of having the n+1 issues.
  
  In the pre-processing step, we create a tree of all the properties/relations. If one of the nodes is
  a one-to-many relation, it gets "separated" as a sub-graph, and we do a special select for that sub-graph with which
@@ -18,8 +18,28 @@
 
  Both the pre-processing & "separation" are done recursively, so the depth to which it can go isn't restricted. 
 
+ ### Complexity (Memory & Performance)
+  - Relation fetch of multiple collections
+    - If we assume that:
+      - k - number of parents
+      - n - number of records of a collection
+      - m - number of collections
+      - z - number of "required" improperly set-up relations
+      - all collections have the same number of records/elements
+
+    - Memory complexity
+      - With cartesian: DSPACE(k &times; n<sup>m</sup>)
+      - Avoiding cartesian: DSPACE(n &times; m)
+
+    - Number of database queries per request
+      - With every property in question being configured as LAZY: k&times;m&times;n&times;z
+      - With n+1: k&times;z
+      - With cartesian: 1
+      - With cartesian & n+1: k&times;z
+      - Avoiding cartesian & n+1: k+m
+
 ## Mainly useful for
- If you are need of:
+ If you are in need of:
  - An implementation of GraphQL which wouldn't require many changes to existing/legacy code
  - Returning multiple collections with relatively high speed and performance
  - Minimizing the quantity/number of queries being sent to a database

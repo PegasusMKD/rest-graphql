@@ -4,8 +4,8 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.PropertyNodeTraversal;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNodeTraversal;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;

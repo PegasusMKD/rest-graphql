@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.core.rest.PageResponse;

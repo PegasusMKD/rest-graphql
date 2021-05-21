@@ -1,11 +1,13 @@
-package spring.graphql.rest.nonoptimized.experimental;
+package spring.graphql.rest.nonoptimized.core;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.interfaces.InputFunction;
+import spring.graphql.rest.nonoptimized.core.interfaces.ValueFetcher;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.example.processors.RQLMainProcessingUnit;
 
 import java.util.List;

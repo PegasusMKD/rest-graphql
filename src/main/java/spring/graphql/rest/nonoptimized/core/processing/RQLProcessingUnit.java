@@ -1,6 +1,6 @@
 package spring.graphql.rest.nonoptimized.core.processing;
 
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto;
 
 import java.util.List;

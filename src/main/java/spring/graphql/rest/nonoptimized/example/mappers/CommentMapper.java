@@ -3,8 +3,8 @@ package spring.graphql.rest.nonoptimized.example.mappers;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.UniversalMapper;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.nodes.TraversalMapper;
 import spring.graphql.rest.nonoptimized.example.dto.CommentDto;
 import spring.graphql.rest.nonoptimized.example.models.Comment;
 
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
-@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {UniversalMapper.class})
+@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TraversalMapper.class})
 public abstract class CommentMapper {
 
 	@Autowired

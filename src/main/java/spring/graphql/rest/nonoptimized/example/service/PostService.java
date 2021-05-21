@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.RQL;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
@@ -16,7 +17,6 @@ import spring.graphql.rest.nonoptimized.example.mappers.PostMapper;
 import spring.graphql.rest.nonoptimized.example.models.Post;
 import spring.graphql.rest.nonoptimized.example.models.QPost;
 import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
-import spring.graphql.rest.nonoptimized.experimental.RQL;
 
 import java.util.ArrayList;
 import java.util.HashSet;

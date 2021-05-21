@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized.core;
+package spring.graphql.rest.nonoptimized.core.nodes;
 
 import lombok.*;
 

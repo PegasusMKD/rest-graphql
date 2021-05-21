@@ -1,6 +1,6 @@
 package spring.graphql.rest.nonoptimized.core.helpers;
 
-import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.example.processors.dto.ClassAndPropertyDto;
 
 import javax.persistence.OneToMany;
@@ -12,7 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class GenericsHelper {
+public abstract class GenericsHelper {
 
 	private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 

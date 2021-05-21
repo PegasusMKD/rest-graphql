@@ -1,25 +1,30 @@
 package spring.graphql.rest.nonoptimized.example.service;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
 import spring.graphql.rest.nonoptimized.example.dto.AccountDto;
 import spring.graphql.rest.nonoptimized.example.dto.PersonDto;
 import spring.graphql.rest.nonoptimized.example.mappers.AccountMapper;
-import spring.graphql.rest.nonoptimized.example.models.*;
+import spring.graphql.rest.nonoptimized.example.models.Account;
+import spring.graphql.rest.nonoptimized.example.models.QAccount;
 import spring.graphql.rest.nonoptimized.example.models.QPerson;
-import spring.graphql.rest.nonoptimized.example.processors.RQLMainProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.repository.AccountRepository;
-import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
+import spring.graphql.rest.nonoptimized.experimental.RQL;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
@@ -30,21 +35,17 @@ public class AccountService {
 
 	private Logger logger = LoggerFactory.getLogger(AccountService.class);
 
-	private final RQLMainProcessingUnit rqlMainProcessingUnit;
-
-	private final PostRepository postRepository;
-
 	private final AccountRepository accountRepository;
 	private final AccountMapper universalMapper;
 
+	private final RQL rql;
 
-	public AccountService(RQLMainProcessingUnit rqlMainProcessingUnit,
-						  PostRepository postRepository, AccountRepository accountRepository,
-						  AccountMapper universalMapper) {
-		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
-		this.postRepository = postRepository;
+
+	public AccountService(AccountRepository accountRepository,
+						  AccountMapper universalMapper, RQL rql) {
 		this.accountRepository = accountRepository;
 		this.universalMapper = universalMapper;
+		this.rql = rql;
 	}
 
 	public AccountDto findOne(String id, String[] attributePaths) {
@@ -60,38 +61,18 @@ public class AccountService {
 		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyNodes, props, "");
 	}
 
-	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) throws NoSuchMethodException, IllegalAccessException {
+	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
 		AccountDto example = prbe.getExample();
+
+		// Fetch data
+		Page<Account> page = rql.efficientCollectionFetch((EntityGraph graph) -> accountRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
+				Slice::getContent, Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
-		List<String> paths = GraphHelpers.getPaths(propertyNodes);
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
-
-		boolean containsRelation = false;
-		if(paths.contains("posts")) {
-			paths.removeIf(val -> val.contains("posts") || val.contains("comments"));
-			containsRelation = true;
-		}
-
-		// Fetch data
-		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), GraphHelpers.getEntityGraph(paths));
-
-		for(PropertyNode node: propertyNodes) {
-			if(paths.contains(node.getGraphPath())) {
-				node.setCompleted(true);
-			}
-		}
-
-		startTime = System.nanoTime();
-		if(containsRelation) {
-			rqlMainProcessingUnit.process(page.getContent(), propertyNodes.stream().filter(val -> val.getProperty().equals("posts")).findAny().get(), propertyNodes);
-			rqlMainProcessingUnit.process(page.getContent(), propertyNodes.stream().filter(val -> val.getProperty().equals("comments")).findAny().get(), propertyNodes);
-		}
-		endTime = System.nanoTime();
-		logger.info("Fetch posts: {} ms -- Posts", (endTime - startTime) / 1000000);
 
 //		startTime = System.nanoTime();
 //		if(containsRelation) {

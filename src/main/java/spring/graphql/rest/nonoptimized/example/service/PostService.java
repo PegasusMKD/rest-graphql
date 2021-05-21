@@ -1,9 +1,6 @@
 package spring.graphql.rest.nonoptimized.example.service;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +15,13 @@ import spring.graphql.rest.nonoptimized.example.dto.PostDto;
 import spring.graphql.rest.nonoptimized.example.mappers.PostMapper;
 import spring.graphql.rest.nonoptimized.example.models.Post;
 import spring.graphql.rest.nonoptimized.example.models.QPost;
-import spring.graphql.rest.nonoptimized.example.processors.RQLMainProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
-import spring.graphql.rest.nonoptimized.experimental.LambdaAndMethods;
+import spring.graphql.rest.nonoptimized.experimental.RQL;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
 
@@ -41,16 +36,13 @@ public class PostService {
 
 	private final AccountService accountService;
 
-	private final RQLMainProcessingUnit rqlMainProcessingUnit;
+	private final RQL rql;
 
-	private final LambdaAndMethods lambdaAndMethods;
-
-	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService, RQLMainProcessingUnit rqlMainProcessingUnit, LambdaAndMethods lambdaAndMethods) {
+	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService, RQL rql) {
 		this.postRepository = postRepository;
 		this.postMapper = postMapper;
 		this.accountService = accountService;
-		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
-		this.lambdaAndMethods = lambdaAndMethods;
+		this.rql = rql;
 	}
 
 	private BooleanExpression makeFilter(PostDto dto) {
@@ -70,36 +62,19 @@ public class PostService {
 				.notEmptyAnd(qPost.content::containsIgnoreCase, dto.getContent());
 	}
 
-	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) throws NoSuchMethodException, IllegalAccessException {
+	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) {
 		PostDto example = prbe.getExample();
 
+		Page<Post> page = rql.efficientCollectionFetch(
+				(EntityGraph graph) -> postRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
+				Slice::getContent, Post.class, attributePaths);
+
+		// TODO: Implement mapping as "special" feature/option
 //		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Post.class, attributePaths);
-		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Posts", (endTime - startTime) / 1000000);
-
-//		boolean containsRelation = false;
-//
-//		if(paths.contains("comments")) {
-//			paths.removeIf(val -> val.contains("comments"));
-//			containsRelation = true;
-//		}
-//
-//		// Fetch data
-//		Page<Post> page = postRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
-//				EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])));
-//
-//		startTime = System.nanoTime();
-//		if(containsRelation) {
-//			rqlMainProcessingUnit.process(page.getContent(), propertyNodes.stream().filter(val -> val.getProperty().equals("comments")).findAny().get(), propertyNodes);
-//		}
-//		endTime = System.nanoTime();
-//		logger.info("Fetch posts: {} ms -- Posts", (endTime - startTime) / 1000000);
-
-		Page<Post> page = lambdaAndMethods.efficientCollectionFetch((EntityGraph graph) -> postRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
-				Slice::getContent, Post.class, attributePaths);
 
 		// Map properties
 		startTime = System.nanoTime();

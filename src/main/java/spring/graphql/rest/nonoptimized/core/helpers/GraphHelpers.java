@@ -4,8 +4,8 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
-import spring.graphql.rest.nonoptimized.core.PropertyNodeTraversal;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.PropertyNodeTraversal;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GraphHelpers {
+public abstract class GraphHelpers {
 
 	public static List<PropertyNode> getGenericPropertyWrappers(Class<?> _clazz, String[] attributePaths) {
 		List<String> paths = new ArrayList<>(Arrays.asList(attributePaths));
@@ -33,7 +33,8 @@ public class GraphHelpers {
 	private static PropertyNode createPropertyNode(List<Field> fields, String val) {
 		// TODO: Fix so that it properly sees that it's a child node, not a parent node
 		if(val.contains(".")) {
-			return new PropertyNode("", val, val, false);
+			return new PropertyNode(val.substring(0, val.lastIndexOf(".")),
+					val.substring(val.lastIndexOf(".") + 1), val, val.endsWith("s"));
 		}
 
 		Field field = fields.stream().filter(prop -> prop.getName().equals(val)).findAny()
@@ -59,14 +60,18 @@ public class GraphHelpers {
 	public static List<PropertyNode> getSubTree(List<PropertyNode> tree, PropertyNode node) {
 		return tree.stream()
 				.filter(val -> !val.isCompleted())
-				.filter(val -> val.getParentPropertyPath().contains(node.getProperty()))
+				.filter(val -> val.getParentPropertyPath().startsWith(node.getGraphPath()))
 				.collect(Collectors.toList());
 	}
 
 	public static void completeNode(PropertyNode node, List<PropertyNode> currentTree, PropertyNode el) {
-		if(currentTree.contains(el) || el.getGraphPath().equals(node.getGraphPath())) {
+		if (currentTree.contains(el) || el.getGraphPath().equals(node.getGraphPath())) {
 			el.setCompleted(true);
 		}
+	}
+
+	public static List<PropertyNode> getCurrentLevel(List<PropertyNode> nodes, String parentPropertyPath) {
+		return nodes.stream().filter(node -> node.getParentPropertyPath().equals(parentPropertyPath)).collect(Collectors.toList());
 	}
 
 	public static List<String> getProcessedPaths(List<PropertyNode> currentTree, PropertyNode node) {

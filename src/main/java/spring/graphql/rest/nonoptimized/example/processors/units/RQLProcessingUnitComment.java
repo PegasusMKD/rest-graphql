@@ -1,6 +1,7 @@
 package spring.graphql.rest.nonoptimized.example.processors.units;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
@@ -9,6 +10,7 @@ import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.models.Comment;
 import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.example.processors.repository.RQLCommentRepository;
+import spring.graphql.rest.nonoptimized.experimental.RQL;
 
 import java.util.List;
 import java.util.Set;
@@ -23,8 +25,12 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 	private final RQLCommentRepository rqlCommentRepository;
 
-	public RQLProcessingUnitComment(RQLCommentRepository rqlCommentRepository) {
+	private final RQL rql;
+
+	@Lazy
+	public RQLProcessingUnitComment(RQLCommentRepository rqlCommentRepository, RQL rql) {
 		this.rqlCommentRepository = rqlCommentRepository;
+		this.rql = rql;
 	}
 
 	@Override
@@ -37,10 +43,7 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 		List<Comment> res = callProperQuery(propertyToParent, data, paths);
 		subTree.forEach(el -> completeNode(node, currentTree, el));
 
-		if(subTree.stream().anyMatch(val -> !val.isCompleted())) {
-			// TODO: Implement generic function for fetch/processingUnit call
-		}
-
+		rql.processSubTrees(subTree, res, node.getProperty());
 		return new TransferResultDto<>(propertyToParent, res);
 	}
 

@@ -1,9 +1,5 @@
 package spring.graphql.rest.nonoptimized.core;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.springframework.stereotype.Repository;
-
 import javax.persistence.*;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -40,31 +36,36 @@ public abstract class PropertyNodeTraversal {
 	}
 
 	private static boolean filterEagerAndRequiredManyToOne(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
-		return field.getAnnotation(ManyToOne.class) != null &&
-				((first && properties.stream().map(PropertyNode::getGraphPath)
-						.collect(Collectors.toList()).contains(field.getName())) || !field.getAnnotation(ManyToOne.class).optional() ||
-						(!first && field.getAnnotation(ManyToOne.class).fetch() != FetchType.LAZY ||
-								!Arrays.equals(field.getAnnotation(ManyToOne.class).cascade(), new CascadeType[]{}) ||
-								properties.stream().map(PropertyNode::getGraphPath)
-										.collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
+		ManyToOne mainAnnotation = field.getAnnotation(ManyToOne.class);
+		JoinColumn joinColumnAnnotation = field.getAnnotation(JoinColumn.class);
+		return mainAnnotation != null &&
+				((first && requestedField(properties, "", field)) || !mainAnnotation.optional() ||
+						(joinColumnAnnotation != null && !joinColumnAnnotation.nullable()) ||
+						(!first && mainAnnotation.fetch() != FetchType.LAZY ||
+								!Arrays.equals(mainAnnotation.cascade(), new CascadeType[]{}) ||
+								requestedField(properties, currentPath + ".", field)));
 	}
 
 	private static boolean filterEagerAndRequiredOneToMany(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
-		return field.getAnnotation(OneToMany.class) != null &&
-				((first && properties.stream().map(PropertyNode::getGraphPath)
-						.collect(Collectors.toList()).contains(field.getName()))
-						|| (!first && (field.getAnnotation(OneToMany.class).fetch() != FetchType.LAZY ||
-						properties.stream().map(PropertyNode::getGraphPath)
-								.collect(Collectors.toList()).contains(currentPath + "." + field.getName()))));
+		OneToMany mainAnnotation = field.getAnnotation(OneToMany.class);
+		return mainAnnotation != null &&
+				((first && requestedField(properties, "", field))
+						|| (!first && (mainAnnotation.fetch() != FetchType.LAZY ||
+						requestedField(properties, currentPath + ".", field))));
 	}
 
 	private static boolean filterEagerAndRequiredOneToOne(List<PropertyNode> properties, String currentPath, boolean first, Field field) {
-		return field.getAnnotation(OneToOne.class) != null &&
-				((first && (!field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
-						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(field.getName())))
-						|| (!first && !field.getAnnotation(OneToOne.class).mappedBy().isEmpty() || properties.stream()
-						.map(PropertyNode::getGraphPath).collect(Collectors.toList()).contains(currentPath + "." + field.getName())));
+		OneToOne mainAnnotation = field.getAnnotation(OneToOne.class);
+		return mainAnnotation != null &&
+				((first && (!mainAnnotation.mappedBy().isEmpty() || requestedField(properties, "", field))) ||
+						(!first && !mainAnnotation.mappedBy().isEmpty() || requestedField(properties, currentPath + ".", field)));
 	}
+
+	private static boolean requestedField(List<PropertyNode> properties, String currentPath, Field field) {
+		return properties.stream().map(PropertyNode::getGraphPath)
+				.collect(Collectors.toList()).contains(currentPath + field.getName());
+	}
+
 
 	private static void traverseProperties(Class<?> type, List<PropertyNode> properties, String currentPath,
 										   List<Class<?>> passedClasses, boolean first, Field field) {

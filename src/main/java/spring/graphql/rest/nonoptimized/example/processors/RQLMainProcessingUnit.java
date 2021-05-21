@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.graphql.rest.nonoptimized.core.helpers.Helpers;
 import spring.graphql.rest.nonoptimized.core.PropertyNode;
+import spring.graphql.rest.nonoptimized.core.helpers.Helpers;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnitDistributor;
 import spring.graphql.rest.nonoptimized.example.processors.dto.ClassAndPropertyDto;
@@ -14,7 +14,8 @@ import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static spring.graphql.rest.nonoptimized.core.helpers.GenericsHelper.*;
@@ -33,7 +34,7 @@ public class RQLMainProcessingUnit {
 
 	@Transactional(readOnly = true)
 	public <T> void process(List<T> data, PropertyNode node, List<PropertyNode> tree) throws NoSuchMethodException, IllegalAccessException {
-		if (data.size() == 0) {
+		if (data.size() == 0 || node.isCompleted()) {
 			return;
 		}
 		Class<?> parentClass = data.get(0).getClass();

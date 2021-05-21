@@ -1,18 +1,18 @@
 package spring.graphql.rest.nonoptimized.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
 @Data
+@ToString
+@EqualsAndHashCode(exclude = "id")
 @NoArgsConstructor
 @AllArgsConstructor
 public class PropertyNode {
 	private String id = UUID.randomUUID().toString();
 
-	private String parentPropertyPath;
+	private String parentPropertyPath = "";
 	private String property;
 	private String graphPath;
 

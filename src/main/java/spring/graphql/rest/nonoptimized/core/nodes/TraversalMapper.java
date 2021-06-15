@@ -19,25 +19,19 @@ public abstract class TraversalMapper {
 		if (vals instanceof Collection || vals instanceof Map) {
 			return;
 		}
-		if (currentPath.length() == 0) {
-			currentPath.append(property);
-		} else {
-			currentPath.append(".").append(property);
-		}
+
+		currentPath.append(currentPath.length() != 0 ? "." : "" + property);
 		updateProperties(currentPath, propertyNodes, properties);
 	}
 
 	@AfterMapping
 	public void cleanPath(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
 						  @Context List<String> properties) {
-		if(vals instanceof Collection || vals instanceof Map) {
+		if (vals instanceof Collection || vals instanceof Map) {
 			return;
 		}
-		if(currentPath.toString().contains(".")) {
-			currentPath.delete(currentPath.lastIndexOf("."), currentPath.length());
-		} else {
-			currentPath.delete(0, currentPath.length());
-		}
+
+		currentPath.delete(!currentPath.toString().contains(".") ? 0 : currentPath.lastIndexOf("."), currentPath.length());
 		updateProperties(currentPath, propertyNodes, properties);
 	}
 

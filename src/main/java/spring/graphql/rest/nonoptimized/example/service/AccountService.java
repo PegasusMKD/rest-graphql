@@ -65,7 +65,8 @@ public class AccountService {
 		AccountDto example = prbe.getExample();
 
 		// Fetch data
-		Page<Account> page = rql.efficientCollectionFetch((EntityGraph graph) -> accountRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
+		Page<Account> page = rql.efficientCollectionFetch(
+				(EntityGraph graph) -> accountRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
 				Slice::getContent, Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph

@@ -36,6 +36,7 @@ public class RQL {
 		return initialItem;
 	}
 
+
 	// TODO: Put in separate class/service because we want this class to be "clean"
 	//  (only have methods for using functionality, not functions for internal use)
 	public <K> void processSubTrees(List<PropertyNode> propertyNodes, List<K> data, String currentPath) {

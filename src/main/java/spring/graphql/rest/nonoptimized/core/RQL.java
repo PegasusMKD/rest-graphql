@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import spring.graphql.rest.nonoptimized.core.interfaces.InputFunction;
 import spring.graphql.rest.nonoptimized.core.interfaces.ValueFetcher;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.example.processors.RQLMainProcessingUnit;
+import spring.graphql.rest.nonoptimized.core.processing.RQLMainProcessingUnit;
 
 import java.util.List;
 import java.util.stream.Collectors;

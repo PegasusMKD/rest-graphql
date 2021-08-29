@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized.example.processors.dto;
+package spring.graphql.rest.nonoptimized.core.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

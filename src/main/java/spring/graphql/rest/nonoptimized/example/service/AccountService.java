@@ -33,7 +33,7 @@ import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGene
 @Service
 public class AccountService {
 
-	private Logger logger = LoggerFactory.getLogger(AccountService.class);
+	private final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	private final AccountRepository accountRepository;
 	private final AccountMapper universalMapper;
@@ -74,20 +74,6 @@ public class AccountService {
 		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
-
-//		startTime = System.nanoTime();
-//		if(containsRelation) {
-//			List<Account> content = page.getContent();
-//
-//			LinkedHashMap<String, Account> dataMap = new LinkedHashMap<>();
-//			content.forEach(val -> dataMap.put(val.getId(), val));
-//			List<Post> posts = postRepository.findAllByPostedByIdIn(dataMap.keySet(), EntityGraphUtils.fromAttributePaths("postedBy"));
-//			dataMap.forEach((k, v) -> v.setPosts(posts.stream().filter(p -> p.getPostedBy().getId().equals(k)).collect(Collectors.toSet())));
-//			paths.add("posts");
-//		}
-//		endTime = System.nanoTime();
-//		logger.info("Fetch posts: {} ms -- Posts", (endTime - startTime) / 1000000);
-
 
 		// Map properties
 		startTime = System.nanoTime();

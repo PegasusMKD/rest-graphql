@@ -1,15 +1,13 @@
-package spring.graphql.rest.nonoptimized.example.processors;
+package spring.graphql.rest.nonoptimized.core.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.graphql.rest.nonoptimized.core.dto.ClassAndPropertyDto;
+import spring.graphql.rest.nonoptimized.core.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.core.helpers.Helpers;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
-import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnitDistributor;
-import spring.graphql.rest.nonoptimized.example.processors.dto.ClassAndPropertyDto;
-import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -26,7 +24,7 @@ public class RQLMainProcessingUnit {
 	public static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 	private final RQLProcessingUnitDistributor processingUnitDistributor;
 
-	private Logger logger = LoggerFactory.getLogger(RQLMainProcessingUnit.class);
+	private final Logger logger = LoggerFactory.getLogger(RQLMainProcessingUnit.class);
 
 	public RQLMainProcessingUnit(RQLProcessingUnitDistributor processingUnitDistributor) {
 		this.processingUnitDistributor = processingUnitDistributor;

@@ -5,11 +5,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.RQL;
+import spring.graphql.rest.nonoptimized.core.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
 import spring.graphql.rest.nonoptimized.example.models.Comment;
-import spring.graphql.rest.nonoptimized.example.processors.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.example.processors.repository.RQLCommentRepository;
 
 import java.util.List;

@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
-public abstract class TraversalMapper {
+public interface TraversalMapper {
 
 	@BeforeMapping
-	public void resetGenericPropertyWrappers(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
-											 @Context List<String> properties, @Context String property) {
+	default void resetGenericPropertyWrappers(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
+											  @Context List<String> properties, @Context String property) {
 		if (vals instanceof Collection || vals instanceof Map) {
 			return;
 		}
@@ -25,8 +25,8 @@ public abstract class TraversalMapper {
 	}
 
 	@AfterMapping
-	public void cleanPath(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
-						  @Context List<String> properties) {
+	default void cleanPath(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
+						   @Context List<String> properties) {
 		if (vals instanceof Collection || vals instanceof Map) {
 			return;
 		}
@@ -35,7 +35,7 @@ public abstract class TraversalMapper {
 		updateProperties(currentPath, propertyNodes, properties);
 	}
 
-	private void updateProperties(@Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties) {
+	default void updateProperties(@Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties) {
 		properties.removeIf(val -> !val.isEmpty());
 		properties.addAll(propertyNodes.stream().filter(prop -> prop.getParentPropertyPath().equals(currentPath.toString()))
 				.map(PropertyNode::getProperty).collect(Collectors.toList()));

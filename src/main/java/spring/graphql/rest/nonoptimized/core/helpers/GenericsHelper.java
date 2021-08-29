@@ -1,7 +1,7 @@
 package spring.graphql.rest.nonoptimized.core.helpers;
 
+import spring.graphql.rest.nonoptimized.core.dto.ClassAndPropertyDto;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.example.processors.dto.ClassAndPropertyDto;
 
 import javax.persistence.OneToMany;
 import java.lang.invoke.MethodHandle;

@@ -31,6 +31,7 @@ public abstract class AccountMapper {
 	@IterableMapping(qualifiedByName = "dynamicAccounts")
 	public abstract Set<AccountDto> toAccountDtos(Set<Account> entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 
+	// TODO: Implement automatic generation/addition of these mappers
 	@Named("dynamicAccounts")
 	@Mapping(target = "friends", expression = "java(properties.contains(\"friends\") ? accountMapper.toAccountDtos(entity.getFriends(), currentPath, propertyNodes, properties, \"friends\") : null)")
 	@Mapping(target = "posts", expression = "java(properties.contains(\"posts\") ? postMapper.toPostDtos(entity.getPosts(), currentPath, propertyNodes, properties, \"posts\") : null)")

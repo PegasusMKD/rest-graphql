@@ -3,6 +3,7 @@ package spring.graphql.rest.nonoptimized.core.helpers;
 import spring.graphql.rest.nonoptimized.core.dto.ClassAndPropertyDto;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -29,7 +30,9 @@ public abstract class GenericsHelper {
 				.filter(field -> field.getName().equals(node.getProperty()))
 				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!"));
 
-		return new ClassAndPropertyDto(GenericsHelper.getActualTypeArgument(prop), prop.getAnnotation(OneToMany.class).mappedBy());
+		return new ClassAndPropertyDto(GenericsHelper.getActualTypeArgument(prop),
+				prop.getAnnotation(OneToMany.class) != null ? prop.getAnnotation(OneToMany.class).mappedBy()
+						: prop.getAnnotation(ManyToMany.class).mappedBy());
 	}
 
 	public static <T> String invokeHandle(MethodHandle handle, T val) {

@@ -41,12 +41,12 @@ public class AccountController {
 
 	@PostMapping(value = "/page")
 	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestParam(required = false) String[] attributePaths,
-															@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) throws NoSuchMethodException, IllegalAccessException {
-		if(prbe == null) {
+																	@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) {
+		if (prbe == null) {
 			prbe = new PageRequestByExample<>();
 		}
 
-		if(attributePaths == null) {
+		if (attributePaths == null) {
 			attributePaths = new String[]{};
 		}
 
@@ -69,12 +69,12 @@ public class AccountController {
 
 	@PostMapping(value = "/posts")
 	public ResponseEntity<PageResponse<PostDto>> findAllPosts(@RequestParam(required = false) String[] attributePaths,
-															@RequestBody(required = false) PageRequestByExample<PostDto> prbe) throws NoSuchMethodException, IllegalAccessException {
-		if(prbe == null) {
+															  @RequestBody(required = false) PageRequestByExample<PostDto> prbe) {
+		if (prbe == null) {
 			prbe = new PageRequestByExample<>();
 		}
 
-		if(attributePaths == null) {
+		if (attributePaths == null) {
 			attributePaths = new String[]{};
 		}
 
@@ -132,6 +132,11 @@ public class AccountController {
 	@GetMapping
 	public void populateDatabase() {
 		databaseService.populateDatabase();
+	}
+
+	@GetMapping("/comments")
+	public void populateComments() {
+		databaseService.createComments();
 	}
 
 }

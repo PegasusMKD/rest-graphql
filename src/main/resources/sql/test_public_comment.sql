@@ -15,4 +15,6 @@ create table comment
 alter table comment
     owner to admin;
 
-INSERT INTO public.comment (id, content, post_id, user_id) VALUES ('12A68BAD8413AB0DE0500C0A0E0776A7', 'some', '12A68BAD8413AB0DE0500C0A0E0776A6', '12A68BAD8413AB0DE0500C0A0E0776A2');
+INSERT INTO public.comment (id, content, post_id, user_id)
+VALUES ('12A68BAD8413AB0DE0500C0A0E0776A7', 'some', '12A68BAD8413AB0DE0500C0A0E0776A6',
+        '12A68BAD8413AB0DE0500C0A0E0776A2');

@@ -1,0 +1,59 @@
+schema {
+    query: Query
+}
+
+type Query {
+    allAccounts(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponseAccount
+    allComments(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponseComment
+    allPosts(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponsePost
+}
+
+# Temporary solution (avoiding using unions), since all of this is just for testing
+type PageResponseAccount {
+    totalPages: Int
+    totalElements: Int
+    content: [Account]
+}
+
+type PageResponsePost {
+    totalPages: Int
+    totalElements: Int
+    content: [Post]
+}
+
+type PageResponseComment {
+    totalPages: Int
+    totalElements: Int
+    content: [Comment]
+}
+############################################
+
+type Account {
+    id: String
+    username: String
+    person: Person
+    friends: [Account]
+    posts: [Post]
+    comments: [Comment]
+}
+
+type Post {
+    id: String
+    content: String
+    postedBy: Account
+    comments: [Comment]
+}
+
+type Comment {
+    id: String
+    content: String
+    post: Post
+    account: Account
+}
+
+type Person {
+    id: String
+    fullName: String
+    phoneNumber: String
+    account: Account
+}

@@ -47,6 +47,17 @@
             <artifactId>google-api-services-sheets</artifactId>
             <version>v4-rev20210629-1.32.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson</artifactId>
+            <version>1.15.0-rc</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.39.2</version>
+            <scope>test</scope>
+        </dependency>
         <!-- -->
 
         <dependency>
@@ -120,24 +131,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.10</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client-jackson2</artifactId>
-            <version>1.32.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.api.client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>1.15.0-rc</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.api.client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>1.4.1-beta</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EnableJpaRepositories(repositoryFactoryBeanClass = EntityGraphJpaRepositoryFactoryBean.class)
-public class NonOptimizedApplication {
+public class RQLApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(NonOptimizedApplication.class, args);
+		SpringApplication.run(RQLApplication.class, args);
 	}
 
 }

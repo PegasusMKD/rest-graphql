@@ -6,16 +6,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import spring.graphql.rest.nonoptimized.example.controller.AccountController;
 import spring.graphql.rest.nonoptimized.example.controller.AccountGraphQLController;
+import spring.graphql.rest.nonoptimized.support.SpreadsheetsAPI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class NonOptimizedApplicationTests {
+class RQLApplicationTests {
 
 	@Autowired
 	private AccountController accountController;
+
 	@Autowired
 	private AccountGraphQLController graphQLController;
+
 	@Autowired
 	private SpreadsheetsAPI spreadsheetsAPI;
 

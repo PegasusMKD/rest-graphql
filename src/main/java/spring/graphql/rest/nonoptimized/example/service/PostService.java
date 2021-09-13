@@ -63,7 +63,7 @@ public class PostService {
 	}
 
 	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) {
-		PostDto example = prbe.getExample();
+		PostDto example = prbe.getExample() != null ? prbe.getExample() : new PostDto();
 
 		Page<Post> page = rql.efficientCollectionFetch(
 				(EntityGraph graph) -> postRepository.findAll(makeFilter(example), prbe.toPageable(), graph),

@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized;
+package spring.graphql.rest.nonoptimized.support;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

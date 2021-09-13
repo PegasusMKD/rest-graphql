@@ -67,7 +67,7 @@ public class CommentService {
 
 	@Transactional
 	public PageResponse<CommentDto> findAllComments(PageRequestByExample<CommentDto> prbe, String[] attributePaths) {
-		CommentDto example = prbe.getExample();
+		CommentDto example = prbe.getExample() != null ? prbe.getExample() : new CommentDto();
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();

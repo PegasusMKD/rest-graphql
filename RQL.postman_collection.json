@@ -1,0 +1,327 @@
+{
+  "info": {
+    "_postman_id": "dd8f00f2-9f2b-4ada-9931-315b3e57d4c8",
+    "name": "RQL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GraphQL",
+      "item": [
+        {
+          "name": "Accounts",
+          "item": [
+            {
+              "name": "GraphQL Account Basic",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    allAccounts {\r\n        totalPages\r\n        totalElements\r\n        content {\r\n            id,\r\n            username\r\n        }\r\n    }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/graphql",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "graphql"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GraphQL Account Cartesian Relations",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    allAccounts {\r\n        totalPages\r\n        totalElements\r\n        content {\r\n            id\r\n            username\r\n            comments {\r\n                id\r\n            }\r\n            posts {\r\n                id\r\n            }\r\n        }\r\n    }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/graphql",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "graphql"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GraphQL Account Nested Relations",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    allAccounts {\r\n        totalPages\r\n        totalElements\r\n        content {\r\n            id\r\n            username\r\n            person {\r\n                id\r\n                account {\r\n                    id\r\n                    person {\r\n                        id\r\n                        account {\r\n                            id\r\n                        }\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/graphql",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "graphql"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Posts",
+          "item": [
+            {
+              "name": "GraphQL Post Basic",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    allPosts {\r\n        totalPages\r\n        totalElements\r\n        content {\r\n            id\r\n            content\r\n            postedBy {\r\n                id\r\n                username\r\n            }\r\n        }\r\n    }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/graphql",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "graphql"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "GraphQL Post One To Many Relations",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    allPosts(first: 0, rows: 1000) {\r\n        totalPages\r\n        totalElements\r\n        content {\r\n            id\r\n            content\r\n            postedBy {\r\n                id\r\n                username\r\n            }\r\n            comments {\r\n                id\r\n            }\r\n        }\r\n    }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/graphql",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "graphql"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "REST",
+      "item": [
+        {
+          "name": "Posts",
+          "item": [
+            {
+              "name": "Post One To Many Relation",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"example\": {\r\n  },\r\n  \"lazyLoadEvent\": {\r\n      \"first\": 0,\r\n      \"rows\": 1000\r\n  }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/posts?attributePaths=comments",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "posts"
+                  ],
+                  "query": [
+                    {
+                      "key": "attributePaths",
+                      "value": "comments"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Post Basic",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"example\": {\r\n  }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/posts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "posts"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Accounts",
+          "item": [
+            {
+              "name": "Account Cartesian Relations",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"example\": {\r\n  }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/page?attributePaths=comments, posts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "page"
+                  ],
+                  "query": [
+                    {
+                      "key": "attributePaths",
+                      "value": "comments, posts"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Account Basic",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"example\": {\r\n  }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/page",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "page"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Account Nested Relations",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"example\": {\r\n  }\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/users/page?attributePaths=person, person.account, person.account.person, person.account.person.account",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8080",
+                  "path": [
+                    "users",
+                    "page"
+                  ],
+                  "query": [
+                    {
+                      "key": "attributePaths",
+                      "value": "person, person.account, person.account.person, person.account.person.account"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

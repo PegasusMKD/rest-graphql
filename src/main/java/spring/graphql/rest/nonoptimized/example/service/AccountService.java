@@ -62,7 +62,7 @@ public class AccountService {
 	}
 
 	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
-		AccountDto example = prbe.getExample();
+		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
 		Page<Account> page = rql.efficientCollectionFetch(

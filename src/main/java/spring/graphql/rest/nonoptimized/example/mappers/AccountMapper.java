@@ -27,7 +27,6 @@ public abstract class AccountMapper {
 	@Autowired
 	protected CommentMapper commentMapper;
 
-
 	@IterableMapping(qualifiedByName = "dynamicAccounts")
 	public abstract Set<AccountDto> toAccountDtos(Set<Account> entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 

@@ -17,6 +17,9 @@ public interface AccountRepository extends EntityGraphJpaRepository<Account, Str
 	@NonNull
 	Page<Account> findAll(@NonNull Predicate predicate, @NonNull Pageable pageable, EntityGraph graph);
 
+	@NonNull
+	Page<Account> findAll(@NonNull Pageable pageable);
+
 	List<Account> findAllByFriends_IdIn(List<String> ids);
 
 	Set<Account> findAllByFriends_Id(String id);

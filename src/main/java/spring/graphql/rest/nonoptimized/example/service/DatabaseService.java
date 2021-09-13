@@ -27,6 +27,8 @@ public class DatabaseService {
 
 	private final PersonRepository personRepository;
 
+	private final Random random = new Random();
+
 	public DatabaseService(AccountRepository accountRepository, PostRepository postRepository, CommentRepository commentRepository, PersonRepository personRepository) {
 		this.accountRepository = accountRepository;
 		this.postRepository = postRepository;
@@ -35,8 +37,6 @@ public class DatabaseService {
 	}
 
 	public void populateDatabase() {
-		Random random = new Random();
-
 		Set<Person> people = new HashSet<>();
 		for (int i = 0; i < 100; i++) {
 			Person person = new Person();
@@ -87,4 +87,24 @@ public class DatabaseService {
 		logger.info("Finished populating the database!");
 	}
 
+
+	public void createComments() {
+		List<Account> _accounts = new ArrayList<>(accountRepository.findAll());
+		int commentSize = 0;
+		for (Post post : postRepository.findAll()) {
+			Set<Comment> comments = new HashSet<>();
+			for (int i = 0; i < 60; i++) {
+				Comment comment = new Comment();
+				comment.setContent(String.format("content%d", (comments.size() + 1) * i));
+				comment.setPost(post);
+				comment.setAccount(_accounts.get(random.nextInt(_accounts.size())));
+				comments.add(comment);
+				commentSize++;
+			}
+			commentRepository.saveAll(comments);
+		}
+
+		logger.info("Added {} comments", commentSize);
+		logger.info("Finished populating the database!");
+	}
 }

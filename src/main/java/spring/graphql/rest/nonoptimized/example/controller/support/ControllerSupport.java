@@ -9,10 +9,7 @@ public class ControllerSupport {
 
 	@NotNull
 	public static String[] defaultAttributePaths(@RequestParam(required = false) String[] attributePaths) {
-		if (attributePaths == null) {
-			attributePaths = new String[]{};
-		}
-		return attributePaths;
+		return attributePaths == null ? new String[]{} : attributePaths;
 	}
 
 	public static <T> void defaultLazyLoadEvent(PageRequestByExample<T> prbe) {

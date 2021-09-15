@@ -44,7 +44,7 @@ public class AccountController {
 																	@RequestParam(required = false) String... attributePaths) {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
-		attributePaths = ControllerSupport.defaultAttributePaths(attributePaths);
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		ControllerSupport.defaultLazyLoadEvent(prbe);
 
 //		long startTime = System.nanoTime();
@@ -59,7 +59,7 @@ public class AccountController {
 															  @RequestParam(required = false) String... attributePaths) {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
-		attributePaths = ControllerSupport.defaultAttributePaths(attributePaths);
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		ControllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<PostDto> ret = postService.findAllPosts(prbe, attributePaths);
@@ -71,7 +71,7 @@ public class AccountController {
 																	@RequestParam(required = false) String... attributePaths) {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
-		attributePaths = ControllerSupport.defaultAttributePaths(attributePaths);
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		ControllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<CommentDto> ret = commentService.findAllComments(prbe, attributePaths);
@@ -81,7 +81,7 @@ public class AccountController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<AccountDto> findOne(@PathVariable String id, @RequestParam(required = false) String... attributePaths) {
-		attributePaths = ControllerSupport.defaultAttributePaths(attributePaths);
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		AccountDto user = this.accountService.findOne(id, attributePaths);
 		return ResponseEntity.ok(user);
 	}

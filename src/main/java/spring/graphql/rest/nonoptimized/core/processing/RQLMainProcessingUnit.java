@@ -12,6 +12,7 @@ import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,16 +60,24 @@ public class RQLMainProcessingUnit {
 		if (children == null || children.size() == 0) {
 			return;
 		}
-
 		MethodHandle setChildren = LOOKUP.findVirtual(data.get(0).getClass(), "set" + Helpers.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
-		MethodHandle getParent = LOOKUP.findVirtual(children.get(0).getClass(), "get" + Helpers.capitalize(parentProp), MethodType.methodType(data.get(0).getClass()));
 
-		data.forEach(v -> mapChildrenToParentHandle(getId, children, setChildren, getParent, v));
+		HashMap<Class<?>, MethodHandle> parentHandlers = new HashMap<>();
+		List<Class<?>> classes = children.stream().map(Object::getClass).distinct().collect(Collectors.toList());
+		classes.forEach(_clazz -> {
+			try {
+				parentHandlers.putIfAbsent(_clazz, LOOKUP.findVirtual(_clazz, "get" + Helpers.capitalize(parentProp), MethodType.methodType(data.get(0).getClass())));
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		});
+
+		data.forEach(v -> mapChildrenToParentHandle(getId, children, setChildren, parentHandlers, v));
 	}
 
-	private <T> void mapChildrenToParentHandle(MethodHandle getId, List<?> children, MethodHandle setChildren, MethodHandle getParent, T v) {
+	private <T> void mapChildrenToParentHandle(MethodHandle getId, List<?> children, MethodHandle setChildren, HashMap<Class<?>, MethodHandle> parentHandlers, T v) {
 		try {
-			Set<?> fetchedData = children.stream().filter(p -> findChildrenByParentHandle(getId, getParent, v, p)).collect(Collectors.toSet());
+			Set<?> fetchedData = children.stream().filter(p -> findChildrenByParentHandle(getId, parentHandlers, v, p)).collect(Collectors.toSet());
 			setChildren.invoke(v, fetchedData);
 			children.removeAll(fetchedData);
 		} catch (Throwable e) {
@@ -76,9 +85,9 @@ public class RQLMainProcessingUnit {
 		}
 	}
 
-	private <T> boolean findChildrenByParentHandle(MethodHandle getId, MethodHandle getParent, T v, Object p) {
+	private <T> boolean findChildrenByParentHandle(MethodHandle getId, HashMap<Class<?>, MethodHandle> parentHandlers, T v, Object p) {
 		try {
-			return (getId.invoke(getParent.invoke(p))).equals(getId.invoke(v));
+			return (getId.invoke(parentHandlers.get(p.getClass()).invoke(p))).equals(getId.invoke(v));
 		} catch (Throwable e) {
 			e.printStackTrace();
 			throw new RuntimeException();

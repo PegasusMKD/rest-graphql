@@ -47,10 +47,10 @@ public class AccountController {
 		attributePaths = ControllerSupport.defaultAttributePaths(attributePaths);
 		ControllerSupport.defaultLazyLoadEvent(prbe);
 
-		long startTime = System.nanoTime();
+//		long startTime = System.nanoTime();
 		PageResponse<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
-		long endTime = System.nanoTime();
-		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
+//		long endTime = System.nanoTime();
+//		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
 		return ResponseEntity.ok(ret);
 	}
 

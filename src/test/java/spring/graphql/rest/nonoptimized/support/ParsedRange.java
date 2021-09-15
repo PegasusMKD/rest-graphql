@@ -10,8 +10,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ParsedRange {
-	private int startColumnIndex;
-	private int startRowIndex;
-	private int endColumnIndex;
-	private int endRowIndex;
+	private Integer startColumnIndex;
+	private Integer startRowIndex;
+	private Integer endColumnIndex;
+	private Integer endRowIndex;
 }

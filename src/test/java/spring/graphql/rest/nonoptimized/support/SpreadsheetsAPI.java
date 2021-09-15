@@ -34,11 +34,16 @@ public class SpreadsheetsAPI {
 	private final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
 	private final String TOKENS_DIRECTORY_PATH = "tokens";
 	private final String spreadsheetId = "1RdRL2uLPQtm_skPM-zTr_lHaK9wZ7ztgbYo-2JGna9s";
+
 	private final JsonFactory JSON_FACTORY = new JacksonFactory();
+
 	private final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS);
 	private final Border SOLID_BORDER = new Border().setStyle("SOLID");
+	private final Border NO_BORDER = new Border().setStyle("NONE");
+
 	@Value("classpath:/credentials.json")
 	Resource resource;
+
 	private Sheets.Spreadsheets sheets;
 
 	@PostConstruct
@@ -76,7 +81,6 @@ public class SpreadsheetsAPI {
 	}
 
 	public void batchUpdate(List<SpreadsheetsRequest> funcs) {
-		//
 		BatchUpdateSpreadsheetRequest updateSpreadsheetRequest = new BatchUpdateSpreadsheetRequest()
 				.setRequests(funcs.stream().map(SpreadsheetsRequest::execute).collect(Collectors.toList()));
 		try {
@@ -94,12 +98,12 @@ public class SpreadsheetsAPI {
 				.startColumnIndex(start.charAt(0) - 'A')
 				.startRowIndex(Integer.parseInt(start.substring(1)) - 1)
 				.endColumnIndex((end.charAt(0) - 'A') + 1)
-				.endRowIndex(Integer.parseInt(end.substring(1)))
+				.endRowIndex(!end.substring(1).equals("") ? Integer.parseInt(end.substring(1)) : null)
 				.build();
 	}
 
 	@NotNull
-	private Request solidBordersRequest(ParsedRange range) {
+	private Request updateBordersRequest(ParsedRange range, Border border) {
 		return new Request().setUpdateBorders(
 				new UpdateBordersRequest()
 						.setRange(
@@ -110,29 +114,44 @@ public class SpreadsheetsAPI {
 										.setEndRowIndex(range.getEndRowIndex())
 										.setSheetId(0)
 						)
-						.setTop(SOLID_BORDER)
-						.setBottom(SOLID_BORDER)
-						.setRight(SOLID_BORDER)
-						.setLeft(SOLID_BORDER)
-						.setInnerVertical(SOLID_BORDER)
-						.setInnerHorizontal(SOLID_BORDER)
+						.setTop(border)
+						.setBottom(border)
+						.setRight(border)
+						.setLeft(border)
+						.setInnerVertical(border)
+						.setInnerHorizontal(border)
 		);
 	}
 
-	public void append(List<List<Object>> values, String range) {
+	public void clearLatest(String range) {
+		ClearValuesRequest req = new ClearValuesRequest();
+		try {
+			sheets.values().clear(spreadsheetId, range, req)
+					.execute();
+			batchUpdate(Lists.newArrayList(
+					() -> updateBordersRequest(parse(range), NO_BORDER)
+			));
+		} catch (IOException e) {
+			System.out.println("Exception while clearing data.");
+			e.printStackTrace();
+		}
+	}
+
+	public void append(List<List<Object>> values, String range, boolean overwrite) {
 		ValueRange data = new ValueRange().setValues(values);
 		try {
 			AppendValuesResponse result = sheets.values().append(spreadsheetId, range, data)
-					.setValueInputOption("RAW")
-					.setInsertDataOption("INSERT_ROWS")
+					.setValueInputOption("USER_ENTERED")
+					.setInsertDataOption(overwrite ? "OVERWRITE" : "INSERT_ROWS")
 					.execute();
 			batchUpdate(Lists.newArrayList(
-					() -> solidBordersRequest(parse(result.getUpdates().getUpdatedRange()))
+					() -> updateBordersRequest(parse(result.getUpdates().getUpdatedRange()), SOLID_BORDER)
 			));
 		} catch (IOException e) {
 			System.out.println("Error while appending data.");
 			e.printStackTrace();
 		}
 	}
+
 
 }

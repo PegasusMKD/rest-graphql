@@ -58,6 +58,26 @@
             <version>1.39.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- Prometheus -->
+
+        <!-- https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus -->
+        <!--        <dependency>-->
+        <!--            <groupId>io.micrometer</groupId>-->
+        <!--            <artifactId>micrometer-registry-prometheus</artifactId>-->
+        <!--            <version>1.7.4</version>-->
+        <!--        </dependency>-->
+        <!--        &lt;!&ndash; https://mvnrepository.com/artifact/io.micrometer/micrometer-core &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.micrometer</groupId>-->
+        <!--            <artifactId>micrometer-core</artifactId>-->
+        <!--            <version>1.7.4</version>-->
+        <!--        </dependency>-->
+
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-actuator</artifactId>-->
+        <!--        </dependency>-->
+
         <!-- -->
 
         <dependency>
@@ -132,6 +152,7 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.10</version>
         </dependency>
+
     </dependencies>
 
     <build>

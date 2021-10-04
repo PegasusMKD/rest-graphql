@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized.support;
+package spring.graphql.rest.nonoptimized.support.spreadsheets;
 
 import com.google.api.services.sheets.v4.model.Request;
 

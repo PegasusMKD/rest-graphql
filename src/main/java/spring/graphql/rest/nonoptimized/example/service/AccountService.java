@@ -55,7 +55,8 @@ public class AccountService {
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
-		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths)).orElseThrow(() -> new RuntimeException("Some exception"));
+		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths))
+				.orElseThrow(() -> new RuntimeException("Some exception"));
 
 		// Map properties
 		List<String> props = new ArrayList<>();

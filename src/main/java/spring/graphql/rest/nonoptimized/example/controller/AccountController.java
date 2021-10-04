@@ -5,9 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import spring.graphql.rest.nonoptimized.core.rest.LazyLoadEvent;
 import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
+import spring.graphql.rest.nonoptimized.example.controller.support.ControllerSupport;
 import spring.graphql.rest.nonoptimized.example.dto.AccountDto;
 import spring.graphql.rest.nonoptimized.example.dto.CommentDto;
 import spring.graphql.rest.nonoptimized.example.dto.PostDto;
@@ -40,80 +40,39 @@ public class AccountController {
 	}
 
 	@PostMapping(value = "/page")
-	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestParam(required = false) String[] attributePaths,
-																	@RequestBody(required = false) PageRequestByExample<AccountDto> prbe) {
-		if (prbe == null) {
-			prbe = new PageRequestByExample<>();
-		}
+	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestBody(required = false) PageRequestByExample<AccountDto> prbe,
+																	@RequestParam(required = false) String... attributePaths) {
 
-		if (attributePaths == null) {
-			attributePaths = new String[]{};
-		}
+		prbe = prbe != null ? prbe : new PageRequestByExample<>();
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
+		ControllerSupport.defaultLazyLoadEvent(prbe);
 
-		LazyLoadEvent lazyLoadEvent = new LazyLoadEvent();
-		if (prbe.getLazyLoadEvent() == null) {
-			lazyLoadEvent.setFirst(0);
-			lazyLoadEvent.setRows(Integer.MAX_VALUE);
-			prbe.setLazyLoadEvent(lazyLoadEvent);
-		}
-
-		if(prbe.getExample() == null) {
-			prbe.setExample(new AccountDto());
-		}
-		long startTime = System.nanoTime();
+//		long startTime = System.nanoTime();
 		PageResponse<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
-		long endTime = System.nanoTime();
-		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
+//		long endTime = System.nanoTime();
+//		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
 		return ResponseEntity.ok(ret);
 	}
 
 	@PostMapping(value = "/posts")
-	public ResponseEntity<PageResponse<PostDto>> findAllPosts(@RequestParam(required = false) String[] attributePaths,
-															  @RequestBody(required = false) PageRequestByExample<PostDto> prbe) {
-		if (prbe == null) {
-			prbe = new PageRequestByExample<>();
-		}
+	public ResponseEntity<PageResponse<PostDto>> findAllPosts(@RequestBody(required = false) PageRequestByExample<PostDto> prbe,
+															  @RequestParam(required = false) String... attributePaths) {
 
-		if (attributePaths == null) {
-			attributePaths = new String[]{};
-		}
-
-		LazyLoadEvent lazyLoadEvent = new LazyLoadEvent();
-		if (prbe.getLazyLoadEvent() == null) {
-			lazyLoadEvent.setFirst(0);
-			lazyLoadEvent.setRows(Integer.MAX_VALUE);
-			prbe.setLazyLoadEvent(lazyLoadEvent);
-		}
-
-		if(prbe.getExample() == null) {
-			prbe.setExample(new PostDto());
-		}
+		prbe = prbe != null ? prbe : new PageRequestByExample<>();
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
+		ControllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<PostDto> ret = postService.findAllPosts(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
 	}
 
 	@PostMapping(value = "/comments")
-	public ResponseEntity<PageResponse<CommentDto>> findAllComments(@RequestParam(required = false) String[] attributePaths,
-																	@RequestBody(required = false) PageRequestByExample<CommentDto> prbe) {
-		if(prbe == null) {
-			prbe = new PageRequestByExample<>();
-		}
+	public ResponseEntity<PageResponse<CommentDto>> findAllComments(@RequestBody(required = false) PageRequestByExample<CommentDto> prbe,
+																	@RequestParam(required = false) String... attributePaths) {
 
-		if(attributePaths == null) {
-			attributePaths = new String[]{};
-		}
-
-		LazyLoadEvent lazyLoadEvent = new LazyLoadEvent();
-		if (prbe.getLazyLoadEvent() == null) {
-			lazyLoadEvent.setFirst(0);
-			lazyLoadEvent.setRows(Integer.MAX_VALUE);
-			prbe.setLazyLoadEvent(lazyLoadEvent);
-		}
-
-		if(prbe.getExample() == null) {
-			prbe.setExample(new CommentDto());
-		}
+		prbe = prbe != null ? prbe : new PageRequestByExample<>();
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
+		ControllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<CommentDto> ret = commentService.findAllComments(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
@@ -121,10 +80,8 @@ public class AccountController {
 
 
 	@GetMapping("/{id}")
-	public ResponseEntity<AccountDto> findOne(@PathVariable String id, @RequestParam(required = false) String[] attributePaths) {
-		if(attributePaths == null) {
-			attributePaths = new String[]{};
-		}
+	public ResponseEntity<AccountDto> findOne(@PathVariable String id, @RequestParam(required = false) String... attributePaths) {
+		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		AccountDto user = this.accountService.findOne(id, attributePaths);
 		return ResponseEntity.ok(user);
 	}

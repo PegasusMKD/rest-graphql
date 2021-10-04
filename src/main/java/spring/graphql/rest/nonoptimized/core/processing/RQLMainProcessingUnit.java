@@ -48,7 +48,7 @@ public class RQLMainProcessingUnit {
 		if (node.isOneToMany()) {
 			oneToManyMappingHandle(data, res, node, getId);
 		} else if (node.isManyToMany()) {
-			// TODO: Return many to many mappings
+			// TODO: Return many-to-many mappings
 		}
 	}
 

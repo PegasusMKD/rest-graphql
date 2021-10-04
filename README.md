@@ -73,6 +73,8 @@
  - ***Proper Many-To-Many support***
 
 ## Performance
+ Automatically updated performance spreadsheet: https://docs.google.com/spreadsheets/d/1RdRL2uLPQtm_skPM-zTr_lHaK9wZ7ztgbYo-2JGna9s/edit?usp=sharing
+ 
  - Cartesian Product
    - From disabling the cartesian product a query which takes ~20s execution time gets
      lowered to ~1s execution time

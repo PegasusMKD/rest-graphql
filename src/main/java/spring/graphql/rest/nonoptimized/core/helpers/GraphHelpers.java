@@ -70,8 +70,16 @@ public abstract class GraphHelpers {
 		}
 	}
 
-	public static List<PropertyNode> getCurrentLevel(List<PropertyNode> nodes, String parentPropertyPath) {
-		return nodes.stream().filter(node -> node.getParentPropertyPath().equals(parentPropertyPath)).collect(Collectors.toList());
+	public static List<PropertyNode> getCurrentGroup(List<PropertyNode> nodes, String parentPropertyPath) {
+		List<PropertyNode> elementalLevel = nodes.stream()
+				.filter(node -> node.getParentPropertyPath().equals(parentPropertyPath))
+				.collect(Collectors.toList());
+
+		final ArrayList<PropertyNode> allNodes = new ArrayList<>(elementalLevel);
+		elementalLevel.stream().filter(node -> !node.isOneToMany() && !node.isManyToMany())
+				.forEach(node -> allNodes.addAll(getCurrentGroup(nodes, node.getGraphPath())));
+
+		return allNodes;
 	}
 
 	public static List<String> getProcessedPaths(List<PropertyNode> currentTree, PropertyNode node) {

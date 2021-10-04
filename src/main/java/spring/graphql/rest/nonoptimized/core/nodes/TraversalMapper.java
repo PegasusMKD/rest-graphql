@@ -20,7 +20,7 @@ public interface TraversalMapper {
 			return;
 		}
 
-		currentPath.append(currentPath.length() != 0 ? "." : "" + property);
+		currentPath.append(currentPath.length() != 0 ? "." : "").append(property);
 		updateProperties(currentPath, propertyNodes, properties);
 	}
 

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.RQL;
 import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
@@ -54,15 +55,17 @@ public class AccountService {
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
-		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths)).orElseThrow(() -> new RuntimeException("Some exception"));
+		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths))
+				.orElseThrow(() -> new RuntimeException("Some exception"));
 
 		// Map properties
 		List<String> props = new ArrayList<>();
 		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyNodes, props, "");
 	}
 
+	@Transactional
 	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
-		AccountDto example = prbe.getExample();
+		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
 		Page<Account> page = rql.efficientCollectionFetch(
@@ -70,18 +73,18 @@ public class AccountService {
 				Slice::getContent, Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph
-		long startTime = System.nanoTime();
+//		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
-		long endTime = System.nanoTime();
-		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
+//		long endTime = System.nanoTime();
+//		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		// Map properties
-		startTime = System.nanoTime();
+//		startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
 		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page.getContent()),
 				new StringBuilder(), propertyNodes, props, ""));
-		endTime = System.nanoTime();
-		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
+//		endTime = System.nanoTime();
+//		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}

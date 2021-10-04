@@ -40,7 +40,7 @@ public class RQL {
 	//  (only have methods for using functionality, not functions for internal use)
 	public <K> void processSubTrees(List<PropertyNode> propertyNodes, List<K> data, String currentPath) {
 		if (propertyNodes.stream().anyMatch(val -> !val.isCompleted())) {
-			getCurrentLevel(propertyNodes, currentPath)
+			getCurrentGroup(propertyNodes, currentPath)
 					.stream().filter(node -> !node.isCompleted())
 					.filter(PropertyNode::isOneToMany).forEach(node -> {
 				try {
@@ -55,7 +55,7 @@ public class RQL {
 
 	// TODO: Separate in separate class/helper instead of this service
 	private <T> T calculateParentNodeData(InputFunction<T> initial, List<PropertyNode> propertyNodes) {
-		List<PropertyNode> currentTree = getCurrentLevel(propertyNodes, "")
+		List<PropertyNode> currentTree = getCurrentGroup(propertyNodes, "")
 				.stream().filter(val -> !val.isOneToMany() && !val.isManyToMany()).collect(Collectors.toList());
 		List<String> paths = currentTree.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 

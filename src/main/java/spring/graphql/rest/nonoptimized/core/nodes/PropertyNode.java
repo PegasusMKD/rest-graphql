@@ -9,6 +9,7 @@ import java.util.UUID;
 @EqualsAndHashCode(exclude = "id")
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PropertyNode {
 	private String id = UUID.randomUUID().toString();
 

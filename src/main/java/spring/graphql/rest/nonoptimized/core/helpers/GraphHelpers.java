@@ -24,7 +24,7 @@ public abstract class GraphHelpers {
 		List<PropertyNode> propertyWrappers = paths.stream().map(val ->
 				createPropertyNode(fields, val)).collect(Collectors.toList());
 
-		PropertyNodeTraversal.getDefaultSubAttributes(_clazz,
+		PropertyNodeTraversal.addAndTraverseProperties(_clazz,
 				propertyWrappers, "", new ArrayList<>(), true);
 
 		return propertyWrappers.stream().distinct().collect(Collectors.toList());
@@ -85,5 +85,10 @@ public abstract class GraphHelpers {
 	public static List<String> getProcessedPaths(List<PropertyNode> currentTree, PropertyNode node) {
 		List<String> paths = getPaths(currentTree).stream().filter(val -> val.contains(node.getGraphPath())).collect(Collectors.toList());
 		return paths.stream().map(p -> lowerPath(p, node.getGraphPath())).collect(Collectors.toList());
+	}
+
+	public static List<String> getGraphPaths(List<PropertyNode> properties) {
+		return properties.stream().map(PropertyNode::getGraphPath)
+				.collect(Collectors.toList());
 	}
 }

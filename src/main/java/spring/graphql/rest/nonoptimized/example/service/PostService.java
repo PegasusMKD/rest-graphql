@@ -9,10 +9,10 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import spring.graphql.rest.nonoptimized.core.RQL;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
-import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
-import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageRequestByExample;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageResponse;
 import spring.graphql.rest.nonoptimized.example.dto.PostDto;
+import spring.graphql.rest.nonoptimized.example.dto.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.example.mappers.PostMapper;
 import spring.graphql.rest.nonoptimized.example.models.Post;
 import spring.graphql.rest.nonoptimized.example.models.QPost;
@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.createPropertyNodes;
 
 @Service
 public class PostService {
@@ -72,7 +72,7 @@ public class PostService {
 		// TODO: Implement mapping as "special" feature/option
 //		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Post.class, attributePaths);
+		List<PropertyNode> propertyNodes = createPropertyNodes(Post.class, attributePaths);
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Posts", (endTime - startTime) / 1000000);
 

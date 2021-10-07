@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
-import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
-import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageRequestByExample;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageResponse;
 import spring.graphql.rest.nonoptimized.example.dto.CommentDto;
+import spring.graphql.rest.nonoptimized.example.dto.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.example.mappers.CommentMapper;
 import spring.graphql.rest.nonoptimized.example.models.Comment;
 import spring.graphql.rest.nonoptimized.example.models.QComment;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.createPropertyNodes;
 
 @Service
 public class CommentService {
@@ -71,7 +71,7 @@ public class CommentService {
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Comment.class, attributePaths);
+		List<PropertyNode> propertyNodes = createPropertyNodes(Comment.class, attributePaths);
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Comments", (endTime - startTime) / 1000000);

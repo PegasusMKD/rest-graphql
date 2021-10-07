@@ -5,8 +5,8 @@ import graphql.schema.DataFetchingEnvironment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-import spring.graphql.rest.nonoptimized.core.rest.LazyLoadEvent;
-import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
+import spring.graphql.rest.nonoptimized.example.controller.rest.LazyLoadEvent;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageResponse;
 import spring.graphql.rest.nonoptimized.example.models.Post;
 import spring.graphql.rest.nonoptimized.example.repository.PostRepository;
 

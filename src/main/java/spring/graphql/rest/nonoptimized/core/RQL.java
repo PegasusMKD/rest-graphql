@@ -5,66 +5,52 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.interfaces.InputFunction;
-import spring.graphql.rest.nonoptimized.core.interfaces.ValueFetcher;
+import spring.graphql.rest.nonoptimized.core.interfaces.QueryFunction;
+import spring.graphql.rest.nonoptimized.core.interfaces.ValueExtractor;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.processing.RQLMainProcessingUnit;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.*;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.*;
 
 @Service
 public class RQL {
 
-	private final RQLMainProcessingUnit rqlMainProcessingUnit;
+	private final RQLInternal rqlInternal;
 
-	public RQL(RQLMainProcessingUnit rqlMainProcessingUnit) {
-		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
+	public RQL(RQLInternal rqlInternal) {
+		this.rqlInternal = rqlInternal;
 	}
 
-	public <T extends List<K>, K> T efficientCollectionFetch(InputFunction<T> initial, Class<K> clazz, String... attributePaths) {
-		return efficientCollectionFetch(initial, (T val) -> val, clazz, attributePaths);
+	public <T extends List<K>, K> T efficientCollectionFetch(QueryFunction<T> queryFunction, Class<K> parentType, String... attributePaths) {
+		return efficientCollectionFetch(queryFunction, (T wrapper) -> wrapper, parentType, attributePaths);
 	}
 
-	public <T, K> T efficientCollectionFetch(InputFunction<T> initial, ValueFetcher<T, K> fetcher, Class<K> clazz, String... attributePaths) {
-		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(clazz, attributePaths);
-		T initialItem = calculateParentNodeData(initial, propertyNodes);
-		List<K> data = fetcher.getValue(initialItem);
-		processSubTrees(propertyNodes, data, "");
-		return initialItem;
+	public <T, K> T efficientCollectionFetch(QueryFunction<T> queryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
+		List<PropertyNode> propertyNodes = createPropertyNodes(parentType, attributePaths);
+
+		T queryResult = executeBaseQuery(queryFunction, propertyNodes);
+		List<K> queryData = extractor.extract(queryResult);
+
+		rqlInternal.processSubPartitions(propertyNodes, queryData, "");
+
+		return queryResult;
 	}
 
-	// TODO: Put in separate class/service because we want this class to be "clean"
-	//  (only have methods for using functionality, not functions for internal use)
-	public <K> void processSubTrees(List<PropertyNode> propertyNodes, List<K> data, String currentPath) {
-		if (propertyNodes.stream().anyMatch(val -> !val.isCompleted())) {
-			getCurrentGroup(propertyNodes, currentPath)
-					.stream().filter(node -> !node.isCompleted())
-					.filter(PropertyNode::isOneToMany).forEach(node -> {
-				try {
-					rqlMainProcessingUnit.process(data, node, propertyNodes);
-				} catch (NoSuchMethodException | IllegalAccessException e) {
-					// TODO: Implement proper error-handling
-					e.printStackTrace();
-				}
-			});
-		}
-	}
 
-	// TODO: Separate in separate class/helper instead of this service
-	private <T> T calculateParentNodeData(InputFunction<T> initial, List<PropertyNode> propertyNodes) {
-		List<PropertyNode> currentTree = getCurrentGroup(propertyNodes, "")
+	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes) {
+		List<PropertyNode> currentTree = getCurrentPartition(propertyNodes, "")
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = currentTree.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		EntityGraph graph = paths.isEmpty() ? EntityGraphs.empty() :
 				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
-		T initialItem = initial.accept(graph);
+		T queryResult = queryFunction.execute(graph);
 
 		propertyNodes.forEach(el -> completeNode(new PropertyNode(), currentTree, el));
-		return initialItem;
+		return queryResult;
 	}
+
 
 }

@@ -1,6 +1,6 @@
-package spring.graphql.rest.nonoptimized.core.helpers;
+package spring.graphql.rest.nonoptimized.core.utility;
 
-import spring.graphql.rest.nonoptimized.core.dto.ClassAndPropertyDto;
+import spring.graphql.rest.nonoptimized.core.dto.ChildType;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 
 import javax.persistence.ManyToMany;
@@ -13,24 +13,27 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Collection;
 
-public abstract class GenericsHelper {
+public abstract class GenericsUtility {
 
 	private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 
-	public static Class<?> getActualTypeArgument(Field val) {
-		return Collection.class.isAssignableFrom(val.getType()) ? (Class<?>) ((ParameterizedType) val.getGenericType()).getActualTypeArguments()[0] : val.getType();
+	public static Class<?> findChildType(Field val) {
+		return Collection.class.isAssignableFrom(val.getType()) ?
+				(Class<?>) ((ParameterizedType) val.getGenericType()).getActualTypeArguments()[0] :
+				val.getType();
 	}
 
-	public static MethodHandle findIdMethod(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException {
+	// TODO(Opinionated): Stop forcing a String ID
+	public static MethodHandle findIdGetter(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException {
 		return LOOKUP.findVirtual(clazz, "getId", MethodType.methodType(String.class));
 	}
 
-	public static ClassAndPropertyDto findChildClass(PropertyNode node, Class<?> parentClass) {
+	public static ChildType findChildTypeAndParentAccess(PropertyNode node, Class<?> parentClass) {
 		Field prop = Arrays.stream(parentClass.getDeclaredFields())
 				.filter(field -> field.getName().equals(node.getProperty()))
 				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!"));
 
-		return new ClassAndPropertyDto(GenericsHelper.getActualTypeArgument(prop),
+		return new ChildType(GenericsUtility.findChildType(prop),
 				prop.getAnnotation(OneToMany.class) != null ? prop.getAnnotation(OneToMany.class).mappedBy()
 						: prop.getAnnotation(ManyToMany.class).mappedBy());
 	}

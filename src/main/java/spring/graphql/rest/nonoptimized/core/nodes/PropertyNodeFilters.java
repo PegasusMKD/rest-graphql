@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 
-import static spring.graphql.rest.nonoptimized.core.nodes.NodeUtility.isPropertyRequested;
+import static spring.graphql.rest.nonoptimized.core.utility.NodeUtility.isPropertyRequested;
 
 public class PropertyNodeFilters {
 

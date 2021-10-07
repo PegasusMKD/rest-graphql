@@ -17,5 +17,4 @@ public class RQLProcessingUnitDistributor {
 		return beanFactory.getBean("RQLProcessingUnit" + _clazz.getSimpleName(), RQLProcessingUnit.class);
 	}
 
-
 }

@@ -1,7 +1,7 @@
 package spring.graphql.rest.nonoptimized.example.service.graphql.datafetchers;
 
 import graphql.schema.DataFetchingEnvironment;
-import spring.graphql.rest.nonoptimized.core.rest.LazyLoadEvent;
+import spring.graphql.rest.nonoptimized.example.controller.rest.LazyLoadEvent;
 
 public class LazyLoadEventHelper {
 

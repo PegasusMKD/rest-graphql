@@ -12,6 +12,6 @@ import java.util.List;
 public class TransferResultDto<T> {
 
 	private String parent;
-	private List<T> data;
+	private List<T> result;
 
 }

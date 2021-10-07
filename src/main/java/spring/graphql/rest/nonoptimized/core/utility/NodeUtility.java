@@ -1,5 +1,9 @@
-package spring.graphql.rest.nonoptimized.core.nodes;
+package spring.graphql.rest.nonoptimized.core.utility;
 
+import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
+
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -30,6 +34,24 @@ public class NodeUtility {
 
 		// Iterate children recursively
 		addAndTraverseProperties(type, properties, tmpPath, visited, false);
+	}
+
+	/**
+	 * Transform an attribute path from a string to a property node
+	 */
+	public static PropertyNode createBasePropertyNode(List<Field> properties, String property) {
+		// TODO: Fix so that it properly sees that it's a child node, not a parent node
+		if (property.contains(".")) {
+			return new PropertyNode(property.substring(0, property.lastIndexOf(".")),
+					property.substring(property.lastIndexOf(".") + 1), property,
+					property.endsWith("s"), !property.endsWith("s"));
+		}
+
+		Field field = properties.stream().filter(prop -> prop.getName().equals(property)).findAny()
+				.orElseThrow(() -> new RuntimeException("Path does not exist!"));
+		boolean hasOneToMany = field.getAnnotation(OneToMany.class) != null || field.getAnnotation(ManyToMany.class) != null;
+
+		return new PropertyNode("", property, property, hasOneToMany, !hasOneToMany);
 	}
 
 }

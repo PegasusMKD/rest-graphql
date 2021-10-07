@@ -6,8 +6,13 @@ import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Wrapper class for the fetching of data through Spring Data JPA
+ *
+ * @param <T> Entity type (Account, Post, etc.)
+ */
 public interface RQLProcessingUnit<T> {
 
-	TransferResultDto<T> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent);
+	TransferResultDto<T> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty);
 
 }

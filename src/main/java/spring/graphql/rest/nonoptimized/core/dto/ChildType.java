@@ -7,9 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClassAndPropertyDto {
+public class ChildType {
 
-	private Class<?> clazz;
-	private String propertyToParent;
+	private Class<?> childType;
+	private String parentAccessProperty;
 
 }

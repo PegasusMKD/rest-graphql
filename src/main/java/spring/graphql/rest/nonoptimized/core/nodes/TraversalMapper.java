@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 public interface TraversalMapper {
 
 	@BeforeMapping
-	default void resetGenericPropertyWrappers(Object entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
-											  @Context List<String> properties, @Context String property) {
+	default void resetPropertyNodes(Object entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
+									@Context List<String> properties, @Context String property) {
 		if (entity instanceof Collection || entity instanceof Map) {
 			return;
 		}

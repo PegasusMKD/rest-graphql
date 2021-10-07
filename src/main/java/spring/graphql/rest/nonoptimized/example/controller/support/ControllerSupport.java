@@ -1,7 +1,7 @@
 package spring.graphql.rest.nonoptimized.example.controller.support;
 
-import spring.graphql.rest.nonoptimized.core.rest.LazyLoadEvent;
-import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
+import spring.graphql.rest.nonoptimized.example.controller.rest.LazyLoadEvent;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageRequestByExample;
 
 public class ControllerSupport {
 

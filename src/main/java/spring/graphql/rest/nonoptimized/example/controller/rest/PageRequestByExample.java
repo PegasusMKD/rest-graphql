@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized.core.rest;
+package spring.graphql.rest.nonoptimized.example.controller.rest;
 
 import lombok.*;
 import org.springframework.data.domain.Pageable;

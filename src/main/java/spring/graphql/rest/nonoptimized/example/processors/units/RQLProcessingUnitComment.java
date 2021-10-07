@@ -4,11 +4,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spring.graphql.rest.nonoptimized.core.RQL;
+import spring.graphql.rest.nonoptimized.core.RQLInternal;
 import spring.graphql.rest.nonoptimized.core.dto.TransferResultDto;
-import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.processing.RQLProcessingUnit;
+import spring.graphql.rest.nonoptimized.core.utility.EntityGraphUtility;
+import spring.graphql.rest.nonoptimized.core.utility.GraphUtility;
 import spring.graphql.rest.nonoptimized.example.models.Comment;
 import spring.graphql.rest.nonoptimized.example.processors.repository.RQLCommentRepository;
 
@@ -16,8 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.completeNode;
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getSubTree;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.*;
 
 @Service
 @Qualifier("RQLComment")
@@ -25,34 +25,35 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 	private final RQLCommentRepository rqlCommentRepository;
 
-	private final RQL rql;
+	private final RQLInternal rqlInternal;
 
 	@Lazy
-	public RQLProcessingUnitComment(RQLCommentRepository rqlCommentRepository, RQL rql) {
+	public RQLProcessingUnitComment(RQLCommentRepository rqlCommentRepository, RQLInternal rqlInternal) {
 		this.rqlCommentRepository = rqlCommentRepository;
-		this.rql = rql;
+		this.rqlInternal = rqlInternal;
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
-		List<PropertyNode> subTree = getSubTree(tree, node);
+	public TransferResultDto<Comment> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty) {
+		List<PropertyNode> subPartition = getSubPartition(partition, node);
 
-		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
-		List<Comment> res = callProperQuery(propertyToParent, data, paths);
-		subTree.forEach(el -> completeNode(node, currentTree, el));
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
+				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
+		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
+		List<Comment> result = callProperQuery(parentAccessProperty, ids, paths);
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
-		rql.processSubTrees(subTree, res, node.getProperty());
-		return new TransferResultDto<>(propertyToParent, res);
+		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
+		return new TransferResultDto<>(parentAccessProperty, result);
 	}
 
-	private List<Comment> callProperQuery(String propertyToParent, Set<String> data, List<String> paths) {
-		switch (propertyToParent) {
+	private List<Comment> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
+		switch (parentAccessProperty) {
 			case "account":
-				return rqlCommentRepository.findAllByAccountIdIn(data, GraphHelpers.getEntityGraph(paths));
+				return rqlCommentRepository.findAllByAccountIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
 			case "post":
-				return rqlCommentRepository.findAllByPostIdIn(data, GraphHelpers.getEntityGraph(paths));
+				return rqlCommentRepository.findAllByPostIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
 		}
 
 		throw new RuntimeException();

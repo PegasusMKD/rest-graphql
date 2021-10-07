@@ -1,4 +1,4 @@
-package spring.graphql.rest.nonoptimized.core.querydsl;
+package spring.graphql.rest.nonoptimized.example.dto.querydsl;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.apache.commons.lang3.StringUtils;

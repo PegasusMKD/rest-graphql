@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 public interface TraversalMapper {
 
 	@BeforeMapping
-	default void resetGenericPropertyWrappers(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
-											  @Context List<String> properties, @Context String property) {
-		if (vals instanceof Collection || vals instanceof Map) {
+	default void resetPropertyNodes(Object entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
+									@Context List<String> properties, @Context String property) {
+		if (entity instanceof Collection || entity instanceof Map) {
 			return;
 		}
 
@@ -24,16 +24,18 @@ public interface TraversalMapper {
 		updateProperties(currentPath, propertyNodes, properties);
 	}
 
+
 	@AfterMapping
-	default void cleanPath(Object vals, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
+	default void cleanPath(Object entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes,
 						   @Context List<String> properties) {
-		if (vals instanceof Collection || vals instanceof Map) {
+		if (entity instanceof Collection || entity instanceof Map) {
 			return;
 		}
 
 		currentPath.delete(!currentPath.toString().contains(".") ? 0 : currentPath.lastIndexOf("."), currentPath.length());
 		updateProperties(currentPath, propertyNodes, properties);
 	}
+
 
 	default void updateProperties(@Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties) {
 		properties.removeIf(val -> !val.isEmpty());

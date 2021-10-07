@@ -3,13 +3,15 @@ package spring.graphql.rest.nonoptimized;
 import org.assertj.core.util.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import spring.graphql.rest.nonoptimized.core.rest.LazyLoadEvent;
-import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.example.controller.AccountController;
 import spring.graphql.rest.nonoptimized.example.controller.AccountGraphQLController;
+import spring.graphql.rest.nonoptimized.example.controller.rest.LazyLoadEvent;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.nonoptimized.example.dto.AccountDto;
 import spring.graphql.rest.nonoptimized.support.GraphQLTests;
 import spring.graphql.rest.nonoptimized.support.spreadsheets.RangeHelpers;
@@ -34,6 +36,8 @@ class RQLApplicationTests {
 
 	@Autowired
 	private SpreadsheetsAPI spreadsheetsAPI;
+
+	private Logger logger = LoggerFactory.getLogger(RQLApplicationTests.class);
 
 	@Test
 	void contextLoads() {
@@ -80,12 +84,6 @@ class RQLApplicationTests {
 				graphQLExample, 20);
 	}
 
-	@Test
-	@Transactional
-	void nestedAccountsTest() {
-		System.out.println(nestedAccounts());
-	}
-
 	// Helpers with generics
 	@NotNull
 	private ArrayList<List<Object>> runTest(String type, TimedAction rqlAction, String graphQLExample, int iterations) {
@@ -93,7 +91,10 @@ class RQLApplicationTests {
 
 		// Skipping one so that the back-end gets "warmed up"
 		for (int i = 0; i < iterations + 1; i++) {
+//			logger.info("<---------- RQL -------->");
 			String rqlTime = Timer.roundedTimer(rqlAction);
+
+//			logger.info("<---------- GQL -------->");
 			String graphQLTime = Timer.roundedTimer(() -> graphQLController.executeGraphQLQuery(graphQLExample));
 			if (i == 0) continue;
 
@@ -110,6 +111,7 @@ class RQLApplicationTests {
 		results.addAll(basicAccounts());
 		results.addAll(cartesianAccounts());
 		results.addAll(nestedAccounts());
+		// TODO(Benchmarks): Add nested posts one-to-many (comments, comments.post, comments.post.comments)
 		pushResults(results);
 		pushAverages(results);
 	}

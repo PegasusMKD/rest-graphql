@@ -9,13 +9,13 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.nonoptimized.core.RQL;
-import spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.querydsl.OptionalBooleanBuilder;
-import spring.graphql.rest.nonoptimized.core.rest.PageRequestByExample;
-import spring.graphql.rest.nonoptimized.core.rest.PageResponse;
+import spring.graphql.rest.nonoptimized.core.utility.EntityGraphUtility;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageRequestByExample;
+import spring.graphql.rest.nonoptimized.example.controller.rest.PageResponse;
 import spring.graphql.rest.nonoptimized.example.dto.AccountDto;
 import spring.graphql.rest.nonoptimized.example.dto.PersonDto;
+import spring.graphql.rest.nonoptimized.example.dto.querydsl.OptionalBooleanBuilder;
 import spring.graphql.rest.nonoptimized.example.mappers.AccountMapper;
 import spring.graphql.rest.nonoptimized.example.models.Account;
 import spring.graphql.rest.nonoptimized.example.models.QAccount;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.helpers.GraphHelpers.getGenericPropertyWrappers;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.createPropertyNodes;
 
 
 @Service
@@ -51,11 +51,11 @@ public class AccountService {
 
 	public AccountDto findOne(String id, String[] attributePaths) {
 		// Get minimal number of attributePaths for entity graph
-		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
+		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
-		Account entity = accountRepository.findById(id, GraphHelpers.getEntityGraph(paths))
+		Account entity = accountRepository.findById(id, EntityGraphUtility.getEagerEntityGraph(paths))
 				.orElseThrow(() -> new RuntimeException("Some exception"));
 
 		// Map properties
@@ -74,7 +74,7 @@ public class AccountService {
 
 		// Get minimal number of attributePaths for entity graph
 //		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = getGenericPropertyWrappers(Account.class, attributePaths);
+		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 //		long endTime = System.nanoTime();
 //		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 

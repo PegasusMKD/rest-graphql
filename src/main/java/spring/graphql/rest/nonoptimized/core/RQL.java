@@ -56,7 +56,7 @@ public class RQL {
 	// TODO: Separate in separate class/helper instead of this service
 	private <T> T calculateParentNodeData(InputFunction<T> initial, List<PropertyNode> propertyNodes) {
 		List<PropertyNode> currentTree = getCurrentGroup(propertyNodes, "")
-				.stream().filter(val -> !val.isOneToMany() && !val.isManyToMany()).collect(Collectors.toList());
+				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = currentTree.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		EntityGraph graph = paths.isEmpty() ? EntityGraphs.empty() :

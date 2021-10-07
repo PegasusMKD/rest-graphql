@@ -38,7 +38,7 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> data, PropertyNode node, String propertyToParent) {
 		List<PropertyNode> subTree = getSubTree(tree, node);
 
-		List<PropertyNode> currentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
+		List<PropertyNode> currentTree = subTree.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
 		List<Comment> res = callProperQuery(propertyToParent, data, paths);
 		subTree.forEach(el -> completeNode(node, currentTree, el));

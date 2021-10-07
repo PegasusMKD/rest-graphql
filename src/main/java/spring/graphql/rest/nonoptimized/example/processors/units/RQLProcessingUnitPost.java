@@ -57,7 +57,7 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 //		}
 
 		List<PropertyNode> currentTree = getCurrentGroup(subTree, node.getProperty())
-				.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
+				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphHelpers.getProcessedPaths(currentTree, node);
 		List<Post> res = rqlPostRepository.findAllByPostedByIdIn(data, GraphHelpers.getEntityGraph(paths));
 		subTree.forEach(el -> completeNode(node, currentTree, el));

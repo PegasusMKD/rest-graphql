@@ -3,6 +3,8 @@ package spring.graphql.rest.nonoptimized;
 import org.assertj.core.util.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,8 @@ class RQLApplicationTests {
 
 	@Autowired
 	private SpreadsheetsAPI spreadsheetsAPI;
+
+	private Logger logger = LoggerFactory.getLogger(RQLApplicationTests.class);
 
 	@Test
 	void contextLoads() {
@@ -93,7 +97,10 @@ class RQLApplicationTests {
 
 		// Skipping one so that the back-end gets "warmed up"
 		for (int i = 0; i < iterations + 1; i++) {
+//			logger.info("<---------- RQL -------->");
 			String rqlTime = Timer.roundedTimer(rqlAction);
+
+//			logger.info("<---------- GQL -------->");
 			String graphQLTime = Timer.roundedTimer(() -> graphQLController.executeGraphQLQuery(graphQLExample));
 			if (i == 0) continue;
 

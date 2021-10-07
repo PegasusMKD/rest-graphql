@@ -9,7 +9,6 @@ import java.util.UUID;
 @EqualsAndHashCode(exclude = "id")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PropertyNode {
 	private String id = UUID.randomUUID().toString();
 
@@ -19,15 +18,17 @@ public class PropertyNode {
 
 	private boolean oneToMany;
 	private boolean manyToMany;
+	private boolean xToOne;
 
 	private boolean completed = false;
 
-	public PropertyNode(String parentPropertyPath, String property, String graphPath, boolean oneToMany) {
+	public PropertyNode(String parentPropertyPath, String property, String graphPath, boolean oneToMany, boolean xToOne) {
 		id = UUID.randomUUID().toString();
 		this.parentPropertyPath = parentPropertyPath;
 		this.property = property;
 		this.graphPath = graphPath;
 		this.oneToMany = oneToMany;
+		this.xToOne = xToOne;
 		this.completed = false;
 
 		// TODO: Implement with many-to-many support

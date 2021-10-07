@@ -34,14 +34,14 @@ public abstract class GraphHelpers {
 		// TODO: Fix so that it properly sees that it's a child node, not a parent node
 		if(val.contains(".")) {
 			return new PropertyNode(val.substring(0, val.lastIndexOf(".")),
-					val.substring(val.lastIndexOf(".") + 1), val, val.endsWith("s"));
+					val.substring(val.lastIndexOf(".") + 1), val, val.endsWith("s"), !val.endsWith("s"));
 		}
 
 		Field field = fields.stream().filter(prop -> prop.getName().equals(val)).findAny()
 				.orElseThrow(() -> new RuntimeException("Path does not exist!"));
 		boolean hasOneToMany = field.getAnnotation(OneToMany.class) != null || field.getAnnotation(ManyToMany.class) != null;
 
-		return new PropertyNode("", val, val, hasOneToMany);
+		return new PropertyNode("", val, val, hasOneToMany, !hasOneToMany);
 	}
 
 	public static List<String> getPaths(List<PropertyNode> propertyNodes) {
@@ -76,7 +76,7 @@ public abstract class GraphHelpers {
 				.collect(Collectors.toList());
 
 		final ArrayList<PropertyNode> allNodes = new ArrayList<>(elementalLevel);
-		elementalLevel.stream().filter(node -> !node.isOneToMany() && !node.isManyToMany())
+		elementalLevel.stream().filter(PropertyNode::isXToOne)
 				.forEach(node -> allNodes.addAll(getCurrentGroup(nodes, node.getGraphPath())));
 
 		return allNodes;

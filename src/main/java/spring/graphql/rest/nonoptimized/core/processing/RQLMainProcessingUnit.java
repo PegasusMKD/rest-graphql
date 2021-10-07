@@ -1,6 +1,5 @@
 package spring.graphql.rest.nonoptimized.core.processing;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import spring.graphql.rest.nonoptimized.core.dto.ChildType;
 import spring.graphql.rest.nonoptimized.core.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.utility.GeneralUtility;
+import spring.graphql.rest.nonoptimized.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -64,34 +64,8 @@ public class RQLMainProcessingUnit {
 
 		MethodHandle childrenSetter = LOOKUP.findVirtual(parents.get(0).getClass(), "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 
-		HashMap<Class<?>, MethodHandle> parentHandlers = findParentHandlers(parents, children, parentProperty);
+		HashMap<Class<?>, MethodHandle> parentHandlers = GenericsUtility.mapParentHandlers(parents, children, parentProperty);
 		parents.forEach(parent -> mapChildrenToParentHandle(idGetter, children, childrenSetter, parentHandlers, parent));
-	}
-
-	/**
-	 * Find all the possible getters for a property.
-	 * <br/><br/>
-	 * This is needed due to HibernateProxy getters, which would return a different object compared to T,
-	 * so we need to have getters for both situations.
-	 *
-	 * @param children       List of all the child data
-	 * @param parents        List of all the parents
-	 * @param parentProperty Property to which the appropriate child data should be set
-	 * @param <T>            Type of parents
-	 */
-	@NotNull
-	private <T> HashMap<Class<?>, MethodHandle> findParentHandlers(List<T> parents, List<?> children, String parentProperty) {
-		HashMap<Class<?>, MethodHandle> parentHandlers = new HashMap<>();
-		children.stream().map(Object::getClass).distinct().forEach(_clazz -> {
-			try {
-				parentHandlers.putIfAbsent(_clazz, LOOKUP.findVirtual(_clazz,
-						"get" + GeneralUtility.capitalize(parentProperty),
-						MethodType.methodType(parents.get(0).getClass())));
-			} catch (NoSuchMethodException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		});
-		return parentHandlers;
 	}
 
 	private <T> void mapChildrenToParentHandle(MethodHandle idGetter, List<?> children, MethodHandle childrenSetter, HashMap<Class<?>, MethodHandle> parentHandlers, T parent) {

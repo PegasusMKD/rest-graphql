@@ -34,37 +34,17 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	@Override
 	@Transactional(readOnly = true)
-	public TransferResultDto<Post> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty) {
-		List<PropertyNode> subTree = getSubTree(tree, node);
+	public TransferResultDto<Post> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty) {
+		List<PropertyNode> subPartition = getSubPartition(partition, node);
 
-//		List<PropertyNode> temporaryCurrentTree = subTree.stream().filter(val -> !val.isOneToMany()).collect(Collectors.toList());
-//
-//		List<PropertyNode> excludedTree = subTree.stream().filter(PropertyNode::isOneToMany).collect(Collectors.toList());
-//		List<String> excludedPaths = GraphHelpers.getPaths(excludedTree);
-//
-//		List<PropertyNode> currentTree = new ArrayList<>();
-//		for(PropertyNode prop: temporaryCurrentTree) {
-//			boolean exclude = false;
-//			for(String path: excludedPaths) {
-//				if(prop.getParentPropertyPath().contains(path)) {
-//					exclude = true;
-//					break;
-//				}
-//			}
-//
-//			if(!exclude) {
-//				currentTree.add(prop);
-//			}
-//		}
-
-		List<PropertyNode> currentTree = getCurrentPartition(subTree, node.getProperty())
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
-		List<String> paths = GraphUtility.getProcessedPaths(currentTree, node);
-		List<Post> res = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
-		subTree.forEach(el -> completeNode(node, currentTree, el));
+		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
+		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
-		rqlInternal.processSubPartitions(subTree, res, node.getProperty());
-		return new TransferResultDto<>(parentAccessProperty, res);
+		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
+		return new TransferResultDto<>(parentAccessProperty, result);
 	}
 
 }

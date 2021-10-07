@@ -44,7 +44,7 @@ public class RQLMainProcessingUnit {
 
 		RQLProcessingUnit<?> processingUnit = processingUnitDistributor.findProcessingUnit(childType.getChildType());
 
-		Set<String> ids = parents.stream().map(entity -> invokeHandle(idGetter, entity)).collect(Collectors.toSet());
+		Set<String> ids = parents.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(Collectors.toSet());
 		TransferResultDto<?> res = processingUnit.process(tree, ids, node, childType.getParentAccessProperty());
 
 		if (node.isOneToMany()) {

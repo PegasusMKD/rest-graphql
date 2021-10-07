@@ -31,21 +31,21 @@ public abstract class GraphUtility {
 	}
 
 
-	public static List<PropertyNode> getCurrentPartition(List<PropertyNode> nodes, String parentPropertyPath) {
+	public static List<PropertyNode> getCurrentValidPartition(List<PropertyNode> nodes, String parentPropertyPath) {
 		List<PropertyNode> elementalLevel = nodes.stream()
 				.filter(node -> node.getParentPropertyPath().equals(parentPropertyPath))
 				.collect(Collectors.toList());
 
 		final ArrayList<PropertyNode> allNodes = new ArrayList<>(elementalLevel);
 		elementalLevel.stream().filter(PropertyNode::isXToOne)
-				.forEach(node -> allNodes.addAll(getCurrentPartition(nodes, node.getGraphPath())));
+				.forEach(node -> allNodes.addAll(getCurrentValidPartition(nodes, node.getGraphPath())));
 
 		return allNodes;
 	}
 
 
-	public static List<PropertyNode> getSubTree(List<PropertyNode> tree, PropertyNode node) {
-		return tree.stream()
+	public static List<PropertyNode> getSubPartition(List<PropertyNode> partition, PropertyNode node) {
+		return partition.stream()
 				.filter(val -> !val.isCompleted())
 				.filter(val -> val.getParentPropertyPath().startsWith(node.getGraphPath()))
 				.collect(Collectors.toList());

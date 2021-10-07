@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.completeNode;
-import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.getSubTree;
+import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.*;
 
 @Service
 @Qualifier("RQLComment")
@@ -36,24 +35,25 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 	@Override
 	@Transactional(readOnly = true)
-	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty) {
-		List<PropertyNode> subTree = getSubTree(tree, node);
+	public TransferResultDto<Comment> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty) {
+		List<PropertyNode> subPartition = getSubPartition(partition, node);
 
-		List<PropertyNode> currentTree = subTree.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
-		List<String> paths = GraphUtility.getProcessedPaths(currentTree, node);
-		List<Comment> res = callProperQuery(parentAccessProperty, ids, paths);
-		subTree.forEach(el -> completeNode(node, currentTree, el));
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
+				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
+		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
+		List<Comment> result = callProperQuery(parentAccessProperty, ids, paths);
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
-		rqlInternal.processSubPartitions(subTree, res, node.getProperty());
-		return new TransferResultDto<>(parentAccessProperty, res);
+		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
+		return new TransferResultDto<>(parentAccessProperty, result);
 	}
 
-	private List<Comment> callProperQuery(String propertyToParent, Set<String> data, List<String> paths) {
-		switch (propertyToParent) {
+	private List<Comment> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
+		switch (parentAccessProperty) {
 			case "account":
-				return rqlCommentRepository.findAllByAccountIdIn(data, EntityGraphUtility.getEagerEntityGraph(paths));
+				return rqlCommentRepository.findAllByAccountIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
 			case "post":
-				return rqlCommentRepository.findAllByPostIdIn(data, EntityGraphUtility.getEagerEntityGraph(paths));
+				return rqlCommentRepository.findAllByPostIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
 		}
 
 		throw new RuntimeException();

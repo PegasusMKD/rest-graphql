@@ -40,15 +40,15 @@ public class RQL {
 
 
 	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes) {
-		List<PropertyNode> currentTree = getCurrentPartition(propertyNodes, "")
+		List<PropertyNode> currentPartition = getCurrentValidPartition(propertyNodes, "")
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
-		List<String> paths = currentTree.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
+		List<String> paths = currentPartition.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		EntityGraph graph = paths.isEmpty() ? EntityGraphs.empty() :
 				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
 		T queryResult = queryFunction.execute(graph);
 
-		propertyNodes.forEach(el -> completeNode(new PropertyNode(), currentTree, el));
+		propertyNodes.forEach(node -> completeNode(new PropertyNode(), currentPartition, node));
 		return queryResult;
 	}
 

@@ -84,12 +84,6 @@ class RQLApplicationTests {
 				graphQLExample, 20);
 	}
 
-	@Test
-	@Transactional
-	void nestedAccountsTest() {
-		System.out.println(nestedAccounts());
-	}
-
 	// Helpers with generics
 	@NotNull
 	private ArrayList<List<Object>> runTest(String type, TimedAction rqlAction, String graphQLExample, int iterations) {
@@ -117,6 +111,7 @@ class RQLApplicationTests {
 		results.addAll(basicAccounts());
 		results.addAll(cartesianAccounts());
 		results.addAll(nestedAccounts());
+		// TODO(Benchmarks): Add nested posts one-to-many (comments, comments.post, comments.post.comments)
 		pushResults(results);
 		pushAverages(results);
 	}

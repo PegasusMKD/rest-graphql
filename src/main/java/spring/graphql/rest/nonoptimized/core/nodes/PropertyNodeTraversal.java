@@ -1,5 +1,6 @@
 package spring.graphql.rest.nonoptimized.core.nodes;
 
+import spring.graphql.rest.nonoptimized.core.utility.GenericsUtility;
 import spring.graphql.rest.nonoptimized.core.utility.GraphUtility;
 import spring.graphql.rest.nonoptimized.core.utility.NodeUtility;
 
@@ -7,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static spring.graphql.rest.nonoptimized.core.nodes.PropertyNodeFilters.*;
-import static spring.graphql.rest.nonoptimized.core.utility.GenericsUtility.findChildType;
 import static spring.graphql.rest.nonoptimized.core.utility.NodeUtility.createAndTraverseOneToManyPropertyNode;
 
 public abstract class PropertyNodeTraversal {
@@ -25,7 +25,7 @@ public abstract class PropertyNodeTraversal {
 
 		// One-To-Many Traversal
 		Arrays.stream(_class.getDeclaredFields()).filter(property -> filterEagerAndRequiredOneToMany(graphPaths, currentPath, first, property))
-				.forEach(property -> createAndTraverseOneToManyPropertyNode(findChildType(property), properties, currentPath, visited, first, property));
+				.forEach(property -> createAndTraverseOneToManyPropertyNode(GenericsUtility.findActualChildType(property), properties, currentPath, visited, first, property));
 	}
 
 }

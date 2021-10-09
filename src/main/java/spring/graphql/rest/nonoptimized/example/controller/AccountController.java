@@ -86,7 +86,7 @@ public class AccountController {
 		return ResponseEntity.ok(user);
 	}
 
-	@GetMapping
+	@GetMapping("/db")
 	public void populateDatabase() {
 		databaseService.populateDatabase();
 	}

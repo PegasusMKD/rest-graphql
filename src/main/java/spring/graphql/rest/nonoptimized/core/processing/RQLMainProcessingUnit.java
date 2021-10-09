@@ -84,7 +84,6 @@ public class RQLMainProcessingUnit {
 		try {
 			Object parentId = invokeHandle(String.class, idGetter, parent);
 			childrenSetter.invoke(parent, childMap.get(parentId));
-			childMap.remove(parentId);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

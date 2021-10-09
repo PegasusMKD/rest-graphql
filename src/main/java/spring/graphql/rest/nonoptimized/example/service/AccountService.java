@@ -81,7 +81,7 @@ public class AccountService {
 		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page.getContent()),
 				new StringBuilder(), propertyNodes, props, ""));
 		long endTime = System.nanoTime();
-		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
+//		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}

@@ -6,7 +6,9 @@ import spring.graphql.rest.nonoptimized.core.processing.RQLMainProcessingUnit;
 import spring.graphql.rest.nonoptimized.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.getCurrentValidPartition;
@@ -24,17 +26,22 @@ public class RQLInternal {
 		if (propertyNodes.stream().allMatch(PropertyNode::isCompleted)) {
 			return;
 		}
-
+		List<CompletableFuture<Void>> futures = new ArrayList<>();
 		getCurrentValidPartition(propertyNodes, currentPath)
 				.stream().filter(node -> !node.isCompleted())
 				.filter(PropertyNode::isOneToMany).forEach(node -> {
-					try {
-						rqlMainProcessingUnit.process(findProperParents(parents, node, currentPath), node, propertyNodes);
-					} catch (NoSuchMethodException | IllegalAccessException e) {
-						// TODO: Implement proper error-handling
-						e.printStackTrace();
-					}
+					futures.add(CompletableFuture.runAsync(() -> {
+						try {
+							rqlMainProcessingUnit.process(findProperParents(parents, node, currentPath), node, propertyNodes);
+						} catch (NoSuchMethodException | IllegalAccessException e) {
+							// TODO: Implement proper error-handling
+							e.printStackTrace();
+						}
+					}));
 				});
+
+		futures.forEach(CompletableFuture::join);
+		System.out.println(futures);
 	}
 
 	/**

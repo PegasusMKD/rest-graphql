@@ -70,11 +70,11 @@ public class RQLMainProcessingUnit {
 
 		HashMap<Class<?>, MethodHandle> parentHandlers = GenericsUtility.mapParentHandlers(parents, children, parentProperty);
 
-		Map<Object, ? extends Set<?>> childMap = transformChildrenToMap(idGetter, children, parentType, parentHandlers);
+		Map<Object, ? extends Set<?>> childMap = groupChildrenByParent(idGetter, children, parentType, parentHandlers);
 		parents.forEach(parent -> mapChildrenToParent(idGetter, childMap, childrenSetter, parent));
 	}
 
-	private Map<Object, ? extends Set<?>> transformChildrenToMap(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
+	private Map<Object, ? extends Set<?>> groupChildrenByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
 		return children.stream().collect(groupingBy(child ->
 						invokeHandle(String.class, idGetter, invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
 				, toSet()));

@@ -9,6 +9,7 @@ import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.getCurrentValidPartition;
@@ -18,8 +19,11 @@ public class RQLInternal {
 
 	private final RQLMainProcessingUnit rqlMainProcessingUnit;
 
-	public RQLInternal(RQLMainProcessingUnit rqlMainProcessingUnit) {
+	private final Executor taskExecutor;
+
+	public RQLInternal(RQLMainProcessingUnit rqlMainProcessingUnit, Executor taskExecutor) {
 		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
+		this.taskExecutor = taskExecutor;
 	}
 
 	public <K> void processSubPartitions(List<PropertyNode> propertyNodes, List<K> parents, String currentPath) {
@@ -37,11 +41,10 @@ public class RQLInternal {
 							// TODO: Implement proper error-handling
 							e.printStackTrace();
 						}
-					}));
+					}, taskExecutor));
 				});
 
 		futures.forEach(CompletableFuture::join);
-		System.out.println(futures);
 	}
 
 	/**

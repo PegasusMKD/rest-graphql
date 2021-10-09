@@ -44,7 +44,7 @@ public class RQLInternal {
 	 * (comments.post gets fetched in one query, so the next "in-line" are the comments as parents, while we need the posts).
 	 */
 	private <K> List<?> findProperParents(List<K> parents, PropertyNode nextNode, String currentPath) throws NoSuchMethodException, IllegalAccessException {
-		if (nextNode.getParentPropertyPath().equals("")) return parents;
+		if (nextNode.getParentPropertyPath().equals(currentPath) || currentPath.equals("")) return parents;
 
 		String leftoverPath = nextNode.getParentPropertyPath().substring(currentPath.length() + 1);
 		String[] properties = leftoverPath.split("\\.");

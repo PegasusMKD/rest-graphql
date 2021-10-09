@@ -48,7 +48,7 @@ public abstract class GenericsUtility {
 	public static Class<?> findActualChildType(Class<?> parentClass, String property) {
 		return GenericsUtility.findActualChildType(Arrays.stream(parentClass.getDeclaredFields())
 				.filter(field -> field.getName().equals(property))
-				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!")));
+				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!" + property)));
 	}
 
 	public static <T, K> K invokeHandle(Class<K> resultType, MethodHandle handle, T val) {

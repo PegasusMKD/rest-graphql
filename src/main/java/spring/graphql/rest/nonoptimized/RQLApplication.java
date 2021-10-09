@@ -22,8 +22,8 @@ public class RQLApplication {
 	@Bean
 	public Executor taskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(2);
-		executor.setMaxPoolSize(2);
+		executor.setCorePoolSize(6);
+		executor.setMaxPoolSize(6);
 		executor.setQueueCapacity(500);
 		executor.setThreadNamePrefix("DatabaseLookup-");
 		executor.initialize();

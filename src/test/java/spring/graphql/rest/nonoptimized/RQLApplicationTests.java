@@ -91,11 +91,12 @@ class RQLApplicationTests {
 
 		// Skipping one so that the back-end gets "warmed up"
 		for (int i = 0; i < iterations + 1; i++) {
+//			logger.info("<---------- GQL -------->");
+			String graphQLTime = Timer.roundedTimer(() -> graphQLController.executeGraphQLQuery(graphQLExample));
+
 //			logger.info("<---------- RQL -------->");
 			String rqlTime = Timer.roundedTimer(rqlAction);
 
-//			logger.info("<---------- GQL -------->");
-			String graphQLTime = Timer.roundedTimer(() -> graphQLController.executeGraphQLQuery(graphQLExample));
 			if (i == 0) continue;
 
 			data.add(Lists.newArrayList(type, rqlTime, graphQLTime));

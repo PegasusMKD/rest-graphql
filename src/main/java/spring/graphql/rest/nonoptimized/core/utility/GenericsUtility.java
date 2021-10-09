@@ -1,5 +1,6 @@
 package spring.graphql.rest.nonoptimized.core.utility;
 
+import org.jetbrains.annotations.NotNull;
 import spring.graphql.rest.nonoptimized.core.dto.ChildType;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 
@@ -12,6 +13,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class GenericsUtility {
 
@@ -55,5 +58,29 @@ public abstract class GenericsUtility {
 			throwable.printStackTrace();
 			return null;
 		}
+	}
+
+	/**
+	 * Find all the possible getters for a property.
+	 * <br/><br/>
+	 * This is needed due to HibernateProxy getters, which would return a different object compared to T,
+	 * so we need to have getters for both situations.
+	 *
+	 * @param children       List of all the child data
+	 * @param parents        List of all the parents
+	 * @param parentProperty Property to which the appropriate child data should be set
+	 * @param <T>            Type of parents
+	 */
+	@NotNull
+	public static <T> HashMap<Class<?>, MethodHandle> mapParentHandlers(List<T> parents, List<?> children, String parentProperty) {
+		HashMap<Class<?>, MethodHandle> parentHandlers = new HashMap<>();
+		children.stream().map(Object::getClass).distinct().forEach(_clazz -> {
+			try {
+				parentHandlers.putIfAbsent(_clazz, GenericsUtility.findGetter(_clazz, parents.get(0).getClass(), parentProperty));
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		});
+		return parentHandlers;
 	}
 }

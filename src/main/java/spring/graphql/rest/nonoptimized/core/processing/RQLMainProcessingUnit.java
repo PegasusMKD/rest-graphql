@@ -1,6 +1,5 @@
 package spring.graphql.rest.nonoptimized.core.processing;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,15 +8,19 @@ import spring.graphql.rest.nonoptimized.core.dto.ChildType;
 import spring.graphql.rest.nonoptimized.core.dto.TransferResultDto;
 import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
 import spring.graphql.rest.nonoptimized.core.utility.GeneralUtility;
+import spring.graphql.rest.nonoptimized.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toSet;
 import static spring.graphql.rest.nonoptimized.core.utility.GenericsUtility.*;
 
 @Service
@@ -45,16 +48,16 @@ public class RQLMainProcessingUnit {
 		RQLProcessingUnit<?> processingUnit = processingUnitDistributor.findProcessingUnit(childType.getChildType());
 
 		Set<String> ids = parents.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(Collectors.toSet());
-		TransferResultDto<?> res = processingUnit.process(tree, ids, node, childType.getParentAccessProperty());
+		TransferResultDto<?> transferResult = processingUnit.process(tree, ids, node, childType.getParentAccessProperty());
 
 		if (node.isOneToMany()) {
-			oneToManyMappingHandle(parents, res, node, idGetter);
+			oneToManyMapping(parents, transferResult, node, idGetter);
 		} else if (node.isManyToMany()) {
 			// TODO: Return many-to-many mappings
 		}
 	}
 
-	private <T> void oneToManyMappingHandle(List<T> parents, TransferResultDto<?> result, PropertyNode node, MethodHandle idGetter) throws NoSuchMethodException, IllegalAccessException {
+	private <T> void oneToManyMapping(List<T> parents, TransferResultDto<?> result, PropertyNode node, MethodHandle idGetter) throws NoSuchMethodException, IllegalAccessException {
 		List<?> children = result.getResult();
 		String parentProperty = result.getParent();
 
@@ -62,54 +65,28 @@ public class RQLMainProcessingUnit {
 			return;
 		}
 
-		MethodHandle childrenSetter = LOOKUP.findVirtual(parents.get(0).getClass(), "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
+		Class<?> parentType = parents.get(0).getClass();
+		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 
-		HashMap<Class<?>, MethodHandle> parentHandlers = findParentHandlers(parents, children, parentProperty);
-		parents.forEach(parent -> mapChildrenToParentHandle(idGetter, children, childrenSetter, parentHandlers, parent));
+		HashMap<Class<?>, MethodHandle> parentHandlers = GenericsUtility.mapParentHandlers(parents, children, parentProperty);
+
+		Map<Object, ? extends Set<?>> childMap = groupChildrenByParent(idGetter, children, parentType, parentHandlers);
+		parents.forEach(parent -> mapChildrenToParent(idGetter, childMap, childrenSetter, parent));
 	}
 
-	/**
-	 * Find all the possible getters for a property.
-	 * <br/><br/>
-	 * This is needed due to HibernateProxy getters, which would return a different object compared to T,
-	 * so we need to have getters for both situations.
-	 *
-	 * @param children       List of all the child data
-	 * @param parents        List of all the parents
-	 * @param parentProperty Property to which the appropriate child data should be set
-	 * @param <T>            Type of parents
-	 */
-	@NotNull
-	private <T> HashMap<Class<?>, MethodHandle> findParentHandlers(List<T> parents, List<?> children, String parentProperty) {
-		HashMap<Class<?>, MethodHandle> parentHandlers = new HashMap<>();
-		children.stream().map(Object::getClass).distinct().forEach(_clazz -> {
-			try {
-				parentHandlers.putIfAbsent(_clazz, LOOKUP.findVirtual(_clazz,
-						"get" + GeneralUtility.capitalize(parentProperty),
-						MethodType.methodType(parents.get(0).getClass())));
-			} catch (NoSuchMethodException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		});
-		return parentHandlers;
+	private Map<Object, ? extends Set<?>> groupChildrenByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
+		return children.stream().collect(groupingBy(child ->
+						invokeHandle(String.class, idGetter, invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
+				, toSet()));
 	}
 
-	private <T> void mapChildrenToParentHandle(MethodHandle idGetter, List<?> children, MethodHandle childrenSetter, HashMap<Class<?>, MethodHandle> parentHandlers, T parent) {
+	private <T> void mapChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenSetter, T parent) {
 		try {
-			Set<?> appropriateChildren = children.stream().filter(child -> findChildrenByParentHandle(idGetter, parentHandlers, parent, child)).collect(Collectors.toSet());
-			childrenSetter.invoke(parent, appropriateChildren);
-			children.removeAll(appropriateChildren);
+			Object parentId = invokeHandle(String.class, idGetter, parent);
+			childrenSetter.invoke(parent, childMap.get(parentId));
+			childMap.remove(parentId);
 		} catch (Throwable e) {
 			e.printStackTrace();
-		}
-	}
-
-	private <T> boolean findChildrenByParentHandle(MethodHandle idGetter, HashMap<Class<?>, MethodHandle> parentHandlers, T parent, Object child) {
-		try {
-			return (idGetter.invoke(parentHandlers.get(child.getClass()).invoke(child))).equals(idGetter.invoke(parent));
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new RuntimeException();
 		}
 	}
 }

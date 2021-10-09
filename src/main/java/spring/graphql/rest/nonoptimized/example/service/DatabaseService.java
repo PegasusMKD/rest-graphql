@@ -73,7 +73,7 @@ public class DatabaseService {
 		List<Account> _accounts = new ArrayList<>(accounts);
 		Set<Comment> comments = new HashSet<>();
 		for (Post post : posts) {
-			for (int i = 0; i < 100; i++) {
+			for (int i = 0; i < 60; i++) {
 				Comment comment = new Comment();
 				comment.setContent(String.format("content%d", (comments.size() + 1) * i));
 				comment.setPost(post);
@@ -91,8 +91,8 @@ public class DatabaseService {
 	public void createComments() {
 		List<Account> _accounts = new ArrayList<>(accountRepository.findAll());
 		int commentSize = 0;
+		Set<Comment> comments = new HashSet<>();
 		for (Post post : postRepository.findAll()) {
-			Set<Comment> comments = new HashSet<>();
 			for (int i = 0; i < 60; i++) {
 				Comment comment = new Comment();
 				comment.setContent(String.format("content%d", (comments.size() + 1) * i));
@@ -101,9 +101,9 @@ public class DatabaseService {
 				comments.add(comment);
 				commentSize++;
 			}
-			commentRepository.saveAll(comments);
 		}
 
+		commentRepository.saveAll(comments);
 		logger.info("Added {} comments", commentSize);
 		logger.info("Finished populating the database!");
 	}

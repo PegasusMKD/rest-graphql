@@ -73,18 +73,15 @@ public class AccountService {
 				Slice::getContent, Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph
-//		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
-//		long endTime = System.nanoTime();
-//		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		// Map properties
-//		startTime = System.nanoTime();
+		long startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
 		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page.getContent()),
 				new StringBuilder(), propertyNodes, props, ""));
-//		endTime = System.nanoTime();
-//		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
+		long endTime = System.nanoTime();
+		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}

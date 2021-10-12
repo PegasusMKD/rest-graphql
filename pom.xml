@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>spring.graphql.rest</groupId>
-    <artifactId>non-optimized</artifactId>
+    <artifactId>rql</artifactId>
     <version>1.0.0</version>
-    <name>non-optimized</name>
+    <name>rql</name>
     <description>Baseline version for REST GraphQL implementation</description>
 
     <properties>

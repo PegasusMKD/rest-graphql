@@ -13,6 +13,6 @@ import java.util.Set;
  */
 public interface RQLProcessingUnit<T> {
 
-	TransferResultDto<T> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty);
+	TransferResultDto<T> process(List<PropertyNode> currentPartition, List<PropertyNode> subPartition, Set<String> ids, PropertyNode node, String parentAccessProperty);
 
 }

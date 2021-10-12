@@ -15,9 +15,6 @@ import spring.graphql.rest.rql.example.processors.repository.RQLCommentRepositor
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static spring.graphql.rest.rql.core.utility.GraphUtility.*;
 
 @Service
 @Qualifier("RQLComment")
@@ -35,14 +32,11 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 	@Override
 	@Transactional(readOnly = true)
-	public TransferResultDto<Comment> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty) {
-		List<PropertyNode> subPartition = getSubPartition(partition, node);
+	public TransferResultDto<Comment> process(List<PropertyNode> currentPartition, List<PropertyNode> subPartition,
+											  Set<String> ids, PropertyNode node, String parentAccessProperty) {
 
-		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
-				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
 		List<Comment> result = callProperQuery(parentAccessProperty, ids, paths);
-		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);

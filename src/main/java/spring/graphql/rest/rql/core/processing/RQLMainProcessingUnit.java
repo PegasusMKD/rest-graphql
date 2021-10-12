@@ -1,37 +1,45 @@
 package spring.graphql.rest.rql.core.processing;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.dto.ChildType;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.utility.GeneralUtility;
-import spring.graphql.rest.rql.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static spring.graphql.rest.rql.core.utility.GenericsUtility.*;
+import static spring.graphql.rest.rql.core.utility.GraphUtility.*;
 
 @Service
 public class RQLMainProcessingUnit {
+
+	private final Executor taskExecutor;
+	@Value("${rql.threads.count}")
+	private Integer threadCount;
 
 	public static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 	private final RQLProcessingUnitDistributor processingUnitDistributor;
 
 	private final Logger logger = LoggerFactory.getLogger(RQLMainProcessingUnit.class);
 
-	public RQLMainProcessingUnit(RQLProcessingUnitDistributor processingUnitDistributor) {
+	public RQLMainProcessingUnit(@Qualifier("taskExecutor") Executor taskExecutor, RQLProcessingUnitDistributor processingUnitDistributor) {
+		this.taskExecutor = taskExecutor;
 		this.processingUnitDistributor = processingUnitDistributor;
 	}
 
@@ -47,14 +55,45 @@ public class RQLMainProcessingUnit {
 
 		RQLProcessingUnit<?> processingUnit = processingUnitDistributor.findProcessingUnit(childType.getChildType());
 
-		Set<String> ids = parents.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(Collectors.toSet());
-		TransferResultDto<?> transferResult = processingUnit.process(tree, ids, node, childType.getParentAccessProperty());
+		List<PropertyNode> subPartition = getSubPartition(tree, node);
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
+				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
-		if (node.isOneToMany()) {
-			oneToManyMapping(parents, transferResult, node, idGetter);
-		} else if (node.isManyToMany()) {
-			// TODO: Return many-to-many mappings
+		ArrayList<CompletableFuture<Void>> subFutures = new ArrayList<>();
+		List<? extends List<?>> subSets = Lists.partition(parents, (int) Math.ceil(parents.size() / (double) threadCount));
+		for (List<?> set : subSets) {
+			try {
+				subFutures.add(parallelizedMapping(set, processingUnit, node, childType, idGetter, currentPartition, subPartition));
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			}
 		}
+
+		subFutures.forEach(CompletableFuture::join);
+	}
+
+	@Async
+	@Transactional
+	public <T> CompletableFuture<Void> parallelizedMapping(List<?> set, RQLProcessingUnit<?> processingUnit,
+														   PropertyNode node, ChildType childType, MethodHandle idGetter,
+														   List<PropertyNode> currentPartition, List<PropertyNode> subPartition) throws InstantiationException {
+		try {
+			Set<String> ids = set.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(toSet());
+			TransferResultDto<?> transferResult = processingUnit.process(currentPartition, subPartition, ids, node, childType.getParentAccessProperty());
+
+			if (node.isOneToMany()) {
+				// TODO(Partitioning & Threading): Try to use "set" instead of "parents"
+				oneToManyMapping(set, transferResult, node, idGetter);
+			} else if (node.isManyToMany()) {
+				// TODO: Return many-to-many mappings
+			}
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			// TODO: Implement proper error-handling
+			e.printStackTrace();
+		}
+
+		return CompletableFuture.completedFuture(null);
 	}
 
 	private <T> void oneToManyMapping(List<T> parents, TransferResultDto<?> result, PropertyNode node, MethodHandle idGetter) throws NoSuchMethodException, IllegalAccessException {
@@ -68,7 +107,7 @@ public class RQLMainProcessingUnit {
 		Class<?> parentType = parents.get(0).getClass();
 		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 
-		HashMap<Class<?>, MethodHandle> parentHandlers = GenericsUtility.mapParentHandlers(parents, children, parentProperty);
+		HashMap<Class<?>, MethodHandle> parentHandlers = mapParentHandlers(parents, children, parentProperty);
 
 		Map<Object, ? extends Set<?>> childMap = groupChildrenByParent(idGetter, children, parentType, parentHandlers);
 		parents.forEach(parent -> mapChildrenToParent(idGetter, childMap, childrenSetter, parent));

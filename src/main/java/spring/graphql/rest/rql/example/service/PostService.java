@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
@@ -62,6 +63,7 @@ public class PostService {
 				.notEmptyAnd(qPost.content::containsIgnoreCase, dto.getContent());
 	}
 
+	@Transactional(readOnly = true)
 	public PageResponse<PostDto> findAllPosts(PageRequestByExample<PostDto> prbe, String[] attributePaths) {
 		PostDto example = prbe.getExample() != null ? prbe.getExample() : new PostDto();
 

@@ -30,8 +30,12 @@ import static spring.graphql.rest.rql.core.utility.GraphUtility.*;
 public class RQLMainProcessingUnit {
 
 	private final Executor taskExecutor;
+
 	@Value("${rql.threads.count}")
 	private Integer threadCount;
+
+	@Value("${rql.partition.elements.max-count}")
+	private Integer maxPartitionCount;
 
 	public static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 	private final RQLProcessingUnitDistributor processingUnitDistributor;
@@ -61,7 +65,7 @@ public class RQLMainProcessingUnit {
 		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
 		ArrayList<CompletableFuture<Void>> subFutures = new ArrayList<>();
-		List<? extends List<?>> subSets = Lists.partition(parents, (int) Math.ceil(parents.size() / (double) threadCount));
+		List<? extends List<?>> subSets = Lists.partition(parents, maxPartitionCount);
 		for (List<?> set : subSets) {
 			try {
 				subFutures.add(parallelizedMapping(set, processingUnit, node, childType, idGetter,

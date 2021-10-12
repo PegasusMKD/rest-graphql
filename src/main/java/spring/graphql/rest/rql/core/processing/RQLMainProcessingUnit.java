@@ -102,15 +102,17 @@ public class RQLMainProcessingUnit {
 	}
 
 	private Map<Object, ? extends Set<?>> groupChildrenByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
-		return children.stream().collect(groupingBy(child ->
+		return new ConcurrentHashMap<>(children.stream().collect(groupingBy(child ->
 						invokeHandle(String.class, idGetter, invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
-				, toSet()));
+				, toSet())));
 	}
 
 	private <T> void addChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenAdder, MethodHandle childrenGetter, T parent) {
 		try {
 			Object parentId = invokeHandle(String.class, idGetter, parent);
-			childrenAdder.invoke(childrenGetter.invoke(parent), childMap.get(parentId));
+			Set<?> items = childMap.get(parentId);
+			if (items == null || items.size() == 0) return;
+			childrenAdder.invoke(childrenGetter.invoke(parent), items);
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

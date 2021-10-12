@@ -15,10 +15,7 @@ import spring.graphql.rest.rql.core.utility.GeneralUtility;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -79,6 +76,15 @@ public class RQLMainProcessingUnit {
 
 		Class<?> parentType = parents.get(0).getClass();
 		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
+		parents.forEach(parent -> {
+			try {
+				childrenSetter.invoke(parent, new HashSet<>());
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		});
+		MethodHandle childrenAdder = LOOKUP.findVirtual(Collection.class, "addAll", MethodType.methodType(boolean.class, Collection.class));
+		MethodHandle childrenGetter = LOOKUP.findVirtual(parentType, "get" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(Set.class));
 
 		HashMap<Class<?>, MethodHandle> parentHandlers = mapParentHandlers(parents, children, parentProperty);
 
@@ -86,7 +92,7 @@ public class RQLMainProcessingUnit {
 		for (List<?> _children : childSegments) {
 			CompletableFuture.runAsync(() -> {
 				Map<Object, ? extends Set<?>> childMap = groupChildrenByParent(idGetter, _children, parentType, parentHandlers);
-				parents.forEach(parent -> mapChildrenToParent(idGetter, childMap, childrenSetter, parent));
+				parents.forEach(parent -> addChildrenToParent(idGetter, childMap, childrenAdder, childrenGetter, parent));
 			});
 		}
 	}
@@ -97,10 +103,10 @@ public class RQLMainProcessingUnit {
 				, toSet()));
 	}
 
-	private <T> void mapChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenSetter, T parent) {
+	private <T> void addChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenAdder, MethodHandle childrenGetter, T parent) {
 		try {
 			Object parentId = invokeHandle(String.class, idGetter, parent);
-			childrenSetter.invoke(parent, childMap.get(parentId));
+			childrenAdder.invoke(childrenGetter.invoke(parent), childMap.get(parentId));
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

@@ -1,12 +1,13 @@
 package spring.graphql.rest.rql.core.processing;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.dto.ChildType;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
@@ -62,13 +63,17 @@ public class RQLMainProcessingUnit {
 		List<PropertyNode> subPartition = getSubPartition(tree, node);
 		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
+		Set<String> ids = parents.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(toSet());
 		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
 		ArrayList<CompletableFuture<Void>> subFutures = new ArrayList<>();
-		List<? extends List<?>> subSets = Lists.partition(parents, maxPartitionCount);
-		for (List<?> set : subSets) {
+		Iterable<List<String>> subIdSets = Iterables.partition(ids, maxPartitionCount);
+		for (List<String> idSet : subIdSets) {
 			try {
-				subFutures.add(parallelizedMapping(set, processingUnit, node, childType, idGetter,
+				List<?> set = parents.stream()
+						.filter(entity -> idSet.contains(invokeHandle(String.class, idGetter, entity)))
+						.collect(Collectors.toList());
+				subFutures.add(parallelizedMapping(set, new HashSet<>(idSet), processingUnit, node, childType, idGetter,
 						currentPartition, subPartition));
 			} catch (InstantiationException e) {
 				e.printStackTrace();
@@ -79,13 +84,13 @@ public class RQLMainProcessingUnit {
 	}
 
 	@Async("taskExecutor")
-	@Transactional
-	public <T> CompletableFuture<Void> parallelizedMapping(List<?> set, RQLProcessingUnit<?> processingUnit,
+	@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+	public <T> CompletableFuture<Void> parallelizedMapping(List<?> set, Set<String> ids, RQLProcessingUnit<?> processingUnit,
 														   PropertyNode node, ChildType childType, MethodHandle idGetter,
 														   List<PropertyNode> currentPartition, List<PropertyNode> subPartition) throws InstantiationException {
 		try {
-			Set<String> ids = set.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(toSet());
-			TransferResultDto<?> transferResult = processingUnit.process(currentPartition, subPartition, ids, node, childType.getParentAccessProperty());
+			TransferResultDto<?> transferResult = processingUnit.process(currentPartition, subPartition,
+					ids, node, childType.getParentAccessProperty());
 
 			if (node.isOneToMany()) {
 				// TODO(Partitioning & Threading): Try to use "set" instead of "parents"

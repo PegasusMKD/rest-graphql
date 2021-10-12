@@ -34,7 +34,6 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 	@Transactional(readOnly = true)
 	public TransferResultDto<Comment> process(List<PropertyNode> currentPartition, List<PropertyNode> subPartition,
 											  Set<String> ids, PropertyNode node, String parentAccessProperty) {
-
 		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
 		List<Comment> result = callProperQuery(parentAccessProperty, ids, paths);
 

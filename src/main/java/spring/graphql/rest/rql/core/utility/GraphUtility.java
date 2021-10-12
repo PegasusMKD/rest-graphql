@@ -46,7 +46,7 @@ public abstract class GraphUtility {
 
 	public static List<PropertyNode> getSubPartition(List<PropertyNode> partition, PropertyNode node) {
 		return partition.stream()
-				.filter(val -> !val.isCompleted())
+//				.filter(val -> !val.isCompleted())
 				.filter(val -> val.getParentPropertyPath().startsWith(node.getGraphPath()))
 				.collect(Collectors.toList());
 	}

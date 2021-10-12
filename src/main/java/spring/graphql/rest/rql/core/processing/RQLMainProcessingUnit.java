@@ -56,7 +56,7 @@ public class RQLMainProcessingUnit {
 		RQLProcessingUnit<?> processingUnit = processingUnitDistributor.findProcessingUnit(childType.getChildType());
 
 		List<PropertyNode> subPartition = getSubPartition(tree, node);
-		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
@@ -64,7 +64,8 @@ public class RQLMainProcessingUnit {
 		List<? extends List<?>> subSets = Lists.partition(parents, (int) Math.ceil(parents.size() / (double) threadCount));
 		for (List<?> set : subSets) {
 			try {
-				subFutures.add(parallelizedMapping(set, processingUnit, node, childType, idGetter, currentPartition, subPartition));
+				subFutures.add(parallelizedMapping(set, processingUnit, node, childType, idGetter,
+						currentPartition, subPartition));
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			}
@@ -73,7 +74,7 @@ public class RQLMainProcessingUnit {
 		subFutures.forEach(CompletableFuture::join);
 	}
 
-	@Async
+	@Async("taskExecutor")
 	@Transactional
 	public <T> CompletableFuture<Void> parallelizedMapping(List<?> set, RQLProcessingUnit<?> processingUnit,
 														   PropertyNode node, ChildType childType, MethodHandle idGetter,

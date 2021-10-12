@@ -17,6 +17,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -78,7 +79,7 @@ public class RQLMainProcessingUnit {
 		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 		parents.forEach(parent -> {
 			try {
-				childrenSetter.invoke(parent, new HashSet<>());
+				childrenSetter.invoke(parent, ConcurrentHashMap.newKeySet());
 			} catch (Throwable e) {
 				e.printStackTrace();
 			}
@@ -89,12 +90,15 @@ public class RQLMainProcessingUnit {
 		HashMap<Class<?>, MethodHandle> parentHandlers = mapParentHandlers(parents, children, parentProperty);
 
 		List<? extends List<?>> childSegments = Lists.partition(children, maxPartitionCount);
+		ArrayList<CompletableFuture<?>> futures = new ArrayList<>();
 		for (List<?> _children : childSegments) {
-			CompletableFuture.runAsync(() -> {
+			futures.add(CompletableFuture.runAsync(() -> {
 				Map<Object, ? extends Set<?>> childMap = groupChildrenByParent(idGetter, _children, parentType, parentHandlers);
 				parents.forEach(parent -> addChildrenToParent(idGetter, childMap, childrenAdder, childrenGetter, parent));
-			});
+			}));
 		}
+
+		futures.forEach(CompletableFuture::join);
 	}
 
 	private Map<Object, ? extends Set<?>> groupChildrenByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {

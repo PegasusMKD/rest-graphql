@@ -4,13 +4,17 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
+import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
@@ -26,7 +30,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static spring.graphql.rest.rql.core.utility.GraphUtility.createPropertyNodes;
 
@@ -38,6 +44,9 @@ public class AccountService {
 
 	private final AccountRepository accountRepository;
 	private final AccountMapper universalMapper;
+
+	@Value("${rql.threads.count}")
+	private Integer threadCount;
 
 	private final RQL rql;
 
@@ -68,10 +77,11 @@ public class AccountService {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
-		Page<Account> page = rql.efficientCollectionFetch(
-				(EntityGraph graph) -> accountRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
-				Slice::getContent, Account.class, attributePaths);
-
+		List<LazyLoadEvent> events = partitionLazyLoadEvents(prbe.getLazyLoadEvent());
+		List<CompletableFuture<Page<Account>>> fetches = events.stream().map((event) -> CompletableFuture.supplyAsync(() -> rql.efficientCollectionFetch(
+				(EntityGraph graph) -> accountRepository.findAll(makeFilter(example), event.toPageable(), graph),
+				Slice::getContent, Account.class, attributePaths))).collect(Collectors.toList());
+		Page<Account> page = combinePages(fetches);
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 
@@ -84,6 +94,27 @@ public class AccountService {
 //		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
+	}
+
+	private Page<Account> combinePages(List<CompletableFuture<Page<Account>>> fetches) {
+		CompletableFuture.allOf(fetches.toArray(new CompletableFuture[0])).join();
+		List<Page<Account>> pages = fetches.stream()
+				.map(future -> future.getNow(null))
+				.collect(Collectors.toList());
+		List<Account> data = new ArrayList<>();
+		for (Page<Account> page : pages) {
+			data.addAll(page.getContent());
+		}
+
+		return new PageImpl<>(data, PageRequest.of(1, data.size()), pages.get(0).getTotalPages());
+	}
+
+	private List<LazyLoadEvent> partitionLazyLoadEvents(LazyLoadEvent lazyLoadEvent) {
+		int partitionSize = (int) Math.ceil((double) lazyLoadEvent.getRows() / threadCount);
+
+		return IntStream.range(1, threadCount + 1)
+				.mapToObj(i -> LazyLoadEvent.builder().rows(partitionSize).first(lazyLoadEvent.getFirst() + (partitionSize * i) + 1).build())
+				.collect(Collectors.toList());
 	}
 
 	private BooleanExpression makeFilter(AccountDto dto) {

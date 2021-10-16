@@ -1,55 +1,39 @@
 package spring.graphql.rest.rql.core;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.rql.core.interfaces.QueryFunction;
 import spring.graphql.rest.rql.core.interfaces.ValueExtractor;
-import spring.graphql.rest.rql.core.nodes.PropertyNode;
+import spring.graphql.rest.rql.core.interfaces.query.functions.AsyncQueryFunction;
+import spring.graphql.rest.rql.core.interfaces.query.functions.SyncQueryFunction;
+import spring.graphql.rest.rql.core.internal.RQLAsyncInternal;
+import spring.graphql.rest.rql.core.internal.RQLSyncInternal;
+import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static spring.graphql.rest.rql.core.utility.GraphUtility.*;
 
 @Service
 public class RQL {
 
-	private final RQLInternal rqlInternal;
+	private final RQLSyncInternal rqlSyncInternal;
 
-	public RQL(RQLInternal rqlInternal) {
-		this.rqlInternal = rqlInternal;
+	private final RQLAsyncInternal rqlAsyncInternal;
+
+	public RQL(RQLSyncInternal rqlSyncInternal, RQLAsyncInternal rqlAsyncInternal) {
+		this.rqlSyncInternal = rqlSyncInternal;
+		this.rqlAsyncInternal = rqlAsyncInternal;
 	}
 
-	public <T extends List<K>, K> T efficientCollectionFetch(QueryFunction<T> queryFunction, Class<K> parentType, String... attributePaths) {
-		return efficientCollectionFetch(queryFunction, (T wrapper) -> wrapper, parentType, attributePaths);
+	public <T extends List<K>, K> T efficientCollectionFetch(SyncQueryFunction<T> syncQueryFunction, Class<K> parentType, String... attributePaths) {
+		return efficientCollectionFetch(syncQueryFunction, (T wrapper) -> wrapper, parentType, attributePaths);
 	}
 
-	public <T, K> T efficientCollectionFetch(QueryFunction<T> queryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
-		List<PropertyNode> propertyNodes = createPropertyNodes(parentType, attributePaths);
-
-		T queryResult = executeBaseQuery(queryFunction, propertyNodes);
-		List<K> queryData = extractor.extract(queryResult);
-
-		rqlInternal.processSubPartitions(propertyNodes, queryData, "");
-
-		return queryResult;
+	public <T, K> T efficientCollectionFetch(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
+		return rqlSyncInternal.efficientCollectionFetch(syncQueryFunction::execute, extractor, parentType, null, attributePaths);
 	}
 
-
-	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes) {
-		List<PropertyNode> currentPartition = getCurrentValidPartition(propertyNodes, "")
-				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
-		List<String> paths = currentPartition.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
-
-		EntityGraph graph = paths.isEmpty() ? EntityGraphs.empty() :
-				EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0]));
-		T queryResult = queryFunction.execute(graph);
-
-		propertyNodes.forEach(node -> completeNode(new PropertyNode(), currentPartition, node));
-		return queryResult;
+	public <T extends Page<K>, K> Page<K> asyncEfficientCollectionFetch(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
+																		LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
+		return rqlAsyncInternal.asyncEfficientCollectionFetch(asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
 	}
 
 

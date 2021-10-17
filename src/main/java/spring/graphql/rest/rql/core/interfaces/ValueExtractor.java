@@ -14,6 +14,7 @@ import java.util.List;
  * @param <K> Type of data
  * @param <T> Wrapper type
  */
+@FunctionalInterface
 public interface ValueExtractor<T, K> {
 	List<K> extract(T wrapper);
 }

@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,9 +39,7 @@ public class AccountService {
 
 	private final AccountRepository accountRepository;
 	private final AccountMapper universalMapper;
-
 	private final RQL rql;
-
 
 	public AccountService(AccountRepository accountRepository,
 						  AccountMapper universalMapper, RQL rql) {
@@ -68,9 +67,9 @@ public class AccountService {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
-		Page<Account> page = rql.efficientCollectionFetch(
-				(EntityGraph graph) -> accountRepository.findAll(makeFilter(example), prbe.toPageable(), graph),
-				Slice::getContent, Account.class, attributePaths);
+		Page<Account> page = rql.asyncRQLSelectPagination(
+				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
+				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
@@ -85,6 +84,7 @@ public class AccountService {
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}
+
 
 	private BooleanExpression makeFilter(AccountDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();

@@ -1,4 +1,4 @@
-package spring.graphql.rest.rql.core;
+package spring.graphql.rest.rql.core.internal;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -35,17 +35,18 @@ public class RQLInternal {
 		getCurrentValidPartition(propertyNodes, currentPath)
 				.stream().filter(node -> !node.isCompleted())
 				.filter(PropertyNode::isOneToMany).forEach(node -> {
-					futures.add(CompletableFuture.runAsync(() -> {
-						try {
-							rqlMainProcessingUnit.process(findProperParents(parents, node, currentPath), node, propertyNodes);
-						} catch (NoSuchMethodException | IllegalAccessException e) {
-							// TODO: Implement proper error-handling
-							e.printStackTrace();
-						}
-					}, taskExecutor));
+//					futures.add(CompletableFuture.runAsync(() -> {
+					try {
+						rqlMainProcessingUnit.process(findProperParents(parents, node, currentPath), node, propertyNodes);
+					} catch (NoSuchMethodException | IllegalAccessException e) {
+//							 TODO: Implement proper error-handling
+						e.printStackTrace();
+					}
+//					}));
+//					);
 				});
 
-		futures.forEach(CompletableFuture::join);
+//		futures.forEach(CompletableFuture::join);
 	}
 
 	/**

@@ -56,7 +56,7 @@ public abstract class GenericsUtility {
 			return resultType.cast(handle.invoke(val));
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
-			return null;
+			throw new RuntimeException();
 		}
 	}
 

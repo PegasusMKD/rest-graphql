@@ -35,14 +35,14 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 
 	@Override
 	@Transactional(readOnly = true)
-	public TransferResultDto<Comment> process(List<PropertyNode> partition, Set<String> ids, PropertyNode node, String parentAccessProperty) {
-		List<PropertyNode> subPartition = getSubPartition(partition, node);
-
-		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getProperty())
+	public TransferResultDto<Comment> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty) {
+		List<PropertyNode> subPartition = getSubPartition(tree, node);
+		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
 		List<Comment> result = callProperQuery(parentAccessProperty, ids, paths);
 		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
+
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);

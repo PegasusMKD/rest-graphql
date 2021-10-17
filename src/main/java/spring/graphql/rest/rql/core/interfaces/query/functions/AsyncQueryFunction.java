@@ -1,7 +1,7 @@
 package spring.graphql.rest.rql.core.interfaces.query.functions;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
+import org.springframework.data.domain.Pageable;
 
 // TODO(Documentation): Change document to reflect actual usage
 
@@ -13,5 +13,5 @@ import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
  */
 @FunctionalInterface
 public interface AsyncQueryFunction<T> {
-	T execute(EntityGraph entityGraph, LazyLoadEvent lazyLoadEvent);
+	T execute(EntityGraph entityGraph, Pageable lazyLoadEvent);
 }

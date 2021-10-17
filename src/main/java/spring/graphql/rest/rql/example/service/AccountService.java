@@ -5,13 +5,13 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
-import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
@@ -67,10 +67,10 @@ public class AccountService {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
-		Page<Account> page = rql.asyncEfficientCollectionFetch(
-				(EntityGraph graph, LazyLoadEvent event) -> accountRepository.findAll(makeFilter(example), event.toPageable(), graph),
+		Page<Account> page = rql.asyncRQLSelectPagination(
+				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
 				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
-//		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable());
+
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 

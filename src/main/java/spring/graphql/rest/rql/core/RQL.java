@@ -23,17 +23,17 @@ public class RQL {
 		this.rqlAsyncInternal = rqlAsyncInternal;
 	}
 
-	public <T extends List<K>, K> T efficientCollectionFetch(SyncQueryFunction<T> syncQueryFunction, Class<K> parentType, String... attributePaths) {
-		return efficientCollectionFetch(syncQueryFunction, (T wrapper) -> wrapper, parentType, attributePaths);
+	public <T extends List<K>, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, Class<K> parentType, String... attributePaths) {
+		return rqlSelect(syncQueryFunction, (T wrapper) -> wrapper, parentType, attributePaths);
 	}
 
-	public <T, K> T efficientCollectionFetch(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
-		return rqlSyncInternal.efficientCollectionFetch(syncQueryFunction::execute, extractor, parentType, null, attributePaths);
+	public <T, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
+		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, null, attributePaths);
 	}
 
-	public <T extends Page<K>, K> Page<K> asyncEfficientCollectionFetch(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
-																		LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
-		return rqlAsyncInternal.asyncEfficientCollectionFetch(asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
+	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
+																   LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
+		return rqlAsyncInternal.asyncRQLSelectPagination(asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
 	}
 
 

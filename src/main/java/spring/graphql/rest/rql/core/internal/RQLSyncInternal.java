@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import spring.graphql.rest.rql.core.interfaces.QueryFunction;
 import spring.graphql.rest.rql.core.interfaces.ValueExtractor;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
-import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,10 +23,10 @@ public class RQLSyncInternal {
 		this.rqlInternal = rqlInternal;
 	}
 
-	public <T, K> T rqlSelect(QueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, LazyLoadEvent event, String... attributePaths) {
+	public <T, K> T rqlSelect(QueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
 		List<PropertyNode> propertyNodes = createPropertyNodes(parentType, attributePaths);
 
-		T queryResult = executeBaseQuery(syncQueryFunction, propertyNodes, event);
+		T queryResult = executeBaseQuery(syncQueryFunction, propertyNodes);
 		List<K> queryData = extractor.extract(queryResult);
 
 		rqlInternal.processSubPartitions(propertyNodes, queryData, "");
@@ -36,7 +35,7 @@ public class RQLSyncInternal {
 	}
 
 
-	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes, LazyLoadEvent event) {
+	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes) {
 		List<PropertyNode> currentPartition = getCurrentValidPartition(propertyNodes, "")
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = currentPartition.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());

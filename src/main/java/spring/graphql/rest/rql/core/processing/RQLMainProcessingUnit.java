@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.dto.ChildType;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
@@ -45,7 +44,6 @@ public class RQLMainProcessingUnit {
 		this.processingUnitDistributor = processingUnitDistributor;
 	}
 
-	@Transactional(readOnly = true)
 	public <T> void process(List<T> parents, PropertyNode node, List<PropertyNode> tree) throws NoSuchMethodException, IllegalAccessException {
 		if (parents.size() == 0 || node.isCompleted()) {
 			return;

@@ -28,13 +28,11 @@ public class RQL {
 	}
 
 	public <T, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
-		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, null, attributePaths);
+		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, attributePaths);
 	}
 
-	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
+	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
 																   LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
-		return rqlAsyncInternal.asyncRQLSelectPagination(asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
+		return rqlAsyncInternal.asyncRQLSelectPagination(restrictedBy, amount, asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
 	}
-
-
 }

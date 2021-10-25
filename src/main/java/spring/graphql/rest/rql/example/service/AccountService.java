@@ -10,6 +10,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
+import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
@@ -67,7 +68,7 @@ public class AccountService {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 		// Fetch data
-		Page<Account> page = rql.asyncRQLSelectPagination(
+		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 1,
 				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
 				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
 

@@ -1,12 +1,15 @@
 package spring.graphql.rest.rql.core.internal;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.interfaces.ValueExtractor;
 import spring.graphql.rest.rql.core.interfaces.query.functions.AsyncQueryFunction;
+import spring.graphql.rest.rql.core.pagination.RQLPage;
 import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 
 import java.util.Collections;
@@ -20,19 +23,20 @@ public class RQLAsyncInternal {
 
 	private final RQLSyncInternal rqlSyncInternal;
 	@Value("${rql.threads.count}")
-	private Integer threadCount;
+	private Integer defaultThreadCounter;
 
 	public RQLAsyncInternal(RQLSyncInternal rqlSyncInternal) {
 		this.rqlSyncInternal = rqlSyncInternal;
 	}
 
-	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
-																   LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
-		List<LazyLoadEvent> events = partitionPagination(lazyLoadEvent);
+	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction,
+																   ValueExtractor<T, K> extractor, LazyLoadEvent lazyLoadEvent, Class<K> parentType,
+																   String... attributePaths) {
+		List<RQLPage> events = partitionPagination(restrictedBy, amount, lazyLoadEvent);
 		List<CompletableFuture<T>> fetches = events.stream()
 				.map((event) -> CompletableFuture.supplyAsync(() ->
-						rqlSyncInternal.rqlSelect((graph) -> asyncQueryFunction.execute(graph, event.toPageable()), extractor, parentType, event, attributePaths))
-				).collect(Collectors.toList());
+						rqlSyncInternal.rqlSelect((EntityGraph graph) -> asyncQueryFunction.execute(graph, event), extractor, parentType, attributePaths)
+				)).collect(Collectors.toList());
 		return combinePages(fetches, lazyLoadEvent.toPageable());
 	}
 
@@ -47,16 +51,37 @@ public class RQLAsyncInternal {
 		return new PageImpl<>(data, pageable, pages.get(0).getTotalElements());
 	}
 
-	List<LazyLoadEvent> partitionPagination(LazyLoadEvent lazyLoadEvent) {
-		int currentThreadCount = threadCount;
-		int maxSize = lazyLoadEvent.getFirst() + lazyLoadEvent.getRows();
-		int partitionSize = (int) Math.ceil((double) lazyLoadEvent.getRows() / currentThreadCount);
+	List<RQLPage> partitionPagination(RQLAsyncRestriction restrictedBy, int amount, LazyLoadEvent lazyLoadEvent) {
+		int missingValue = (int) Math.ceil((double) lazyLoadEvent.getRows() / amount);
 
-		if (currentThreadCount > lazyLoadEvent.getRows()) return Collections.singletonList(lazyLoadEvent);
-		return IntStream.range(0, currentThreadCount + 1)
-				.mapToObj(i -> LazyLoadEvent.builder()
-						.rows(partitionSize)
+		int threadCount;
+		int partitionSize;
+
+		if (restrictedBy == RQLAsyncRestriction.THREAD_COUNT) {
+			threadCount = amount;
+			partitionSize = missingValue;
+		} else {
+			partitionSize = amount;
+			threadCount = missingValue;
+		}
+
+		int maxSize = lazyLoadEvent.getFirst() + lazyLoadEvent.getRows();
+
+		if (threadCount > lazyLoadEvent.getRows())
+			return Collections.singletonList(RQLPage.builder()
+					.first(lazyLoadEvent.getFirst())
+					.rows(lazyLoadEvent.getRows())
+					.sortField(lazyLoadEvent.getSortField())
+					.sortFields(lazyLoadEvent.getSortFields())
+					.sortDirection(lazyLoadEvent.toSortDirection())
+					.build());
+		return IntStream.range(0, threadCount + 1)
+				.mapToObj(i -> RQLPage.builder()
+						.rows(Math.min(maxSize - (lazyLoadEvent.getFirst() + partitionSize * i), partitionSize))
 						.first(Math.min(lazyLoadEvent.getFirst() + partitionSize * i, maxSize))
+						.sortField(lazyLoadEvent.getSortField())
+						.sortFields(lazyLoadEvent.getSortFields())
+						.sortDirection(lazyLoadEvent.toSortDirection())
 						.build())
 				.filter(event -> event.getRows() > 0 && event.getFirst() < maxSize)
 				.collect(Collectors.toList());

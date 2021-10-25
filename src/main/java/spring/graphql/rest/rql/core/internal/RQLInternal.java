@@ -7,9 +7,7 @@ import spring.graphql.rest.rql.core.processing.RQLMainProcessingUnit;
 import spring.graphql.rest.rql.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -31,7 +29,6 @@ public class RQLInternal {
 		if (propertyNodes.stream().allMatch(PropertyNode::isCompleted)) {
 			return;
 		}
-		List<CompletableFuture<Void>> futures = new ArrayList<>();
 		getCurrentValidPartition(propertyNodes, currentPath)
 				.stream().filter(node -> !node.isCompleted())
 				.filter(PropertyNode::isOneToMany).forEach(node -> {
@@ -56,7 +53,8 @@ public class RQLInternal {
 	 * (comments.post gets fetched in one query, so the next "in-line" are the comments as parents, while we need the posts).
 	 */
 	private <K> List<?> findProperParents(List<K> parents, PropertyNode nextNode, String currentPath) throws NoSuchMethodException, IllegalAccessException {
-		if (nextNode.getParentPropertyPath().equals("")) return parents;
+		if (nextNode.getParentPropertyPath().equals("") || currentPath.equals(nextNode.getParentPropertyPath()))
+			return parents;
 
 		String leftoverPath = nextNode.getParentPropertyPath().substring(currentPath.length() + 1);
 		String[] properties = leftoverPath.split("\\.");

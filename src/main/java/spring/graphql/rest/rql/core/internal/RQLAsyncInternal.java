@@ -1,7 +1,7 @@
 package spring.graphql.rest.rql.core.internal;
 
 import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import org.springframework.beans.factory.annotation.Value;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +22,6 @@ import java.util.stream.IntStream;
 public class RQLAsyncInternal {
 
 	private final RQLSyncInternal rqlSyncInternal;
-	@Value("${rql.threads.count}")
-	private Integer defaultThreadCounter;
 
 	public RQLAsyncInternal(RQLSyncInternal rqlSyncInternal) {
 		this.rqlSyncInternal = rqlSyncInternal;
@@ -34,10 +32,17 @@ public class RQLAsyncInternal {
 																   String... attributePaths) {
 		List<RQLPage> events = partitionPagination(restrictedBy, amount, lazyLoadEvent);
 		List<CompletableFuture<T>> fetches = events.stream()
-				.map((event) -> CompletableFuture.supplyAsync(() ->
-						rqlSyncInternal.rqlSelect((EntityGraph graph) -> asyncQueryFunction.execute(graph, event), extractor, parentType, attributePaths)
-				)).collect(Collectors.toList());
+				.map((event) -> asyncRQLSelectWrap(asyncQueryFunction, extractor, parentType, event, attributePaths))
+				.collect(Collectors.toList());
 		return combinePages(fetches, lazyLoadEvent.toPageable());
+	}
+
+	@NotNull
+	private <T extends Page<K>, K> CompletableFuture<T> asyncRQLSelectWrap(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, RQLPage event, String[] attributePaths) {
+		return CompletableFuture.supplyAsync(() ->
+				rqlSyncInternal.rqlSelect((EntityGraph graph) ->
+								asyncQueryFunction.execute(graph, event),
+						extractor, parentType, attributePaths));
 	}
 
 	<T extends Page<K>, K> Page<K> combinePages(List<CompletableFuture<T>> fetches, Pageable pageable) {
@@ -52,39 +57,51 @@ public class RQLAsyncInternal {
 	}
 
 	List<RQLPage> partitionPagination(RQLAsyncRestriction restrictedBy, int amount, LazyLoadEvent lazyLoadEvent) {
-		int missingValue = (int) Math.ceil((double) lazyLoadEvent.getRows() / amount);
-
 		int threadCount;
 		int partitionSize;
+
+		int missingValue = (int) Math.ceil((double) lazyLoadEvent.getRows() / amount);
 
 		if (restrictedBy == RQLAsyncRestriction.THREAD_COUNT) {
 			threadCount = amount;
 			partitionSize = missingValue;
-		} else {
-			partitionSize = amount;
+		} else if (restrictedBy == RQLAsyncRestriction.PARTITION_SIZE) {
 			threadCount = missingValue;
+			partitionSize = amount;
+		} else {
+			throw new RuntimeException("No restriction has been set!");
 		}
 
 		int maxSize = lazyLoadEvent.getFirst() + lazyLoadEvent.getRows();
 
 		if (threadCount > lazyLoadEvent.getRows())
-			return Collections.singletonList(RQLPage.builder()
-					.first(lazyLoadEvent.getFirst())
-					.rows(lazyLoadEvent.getRows())
-					.sortField(lazyLoadEvent.getSortField())
-					.sortFields(lazyLoadEvent.getSortFields())
-					.sortDirection(lazyLoadEvent.toSortDirection())
-					.build());
+			return lazyLoadEventToRQLPage(lazyLoadEvent);
+
 		return IntStream.range(0, threadCount + 1)
-				.mapToObj(i -> RQLPage.builder()
-						.rows(Math.min(maxSize - (lazyLoadEvent.getFirst() + partitionSize * i), partitionSize))
-						.first(Math.min(lazyLoadEvent.getFirst() + partitionSize * i, maxSize))
-						.sortField(lazyLoadEvent.getSortField())
-						.sortFields(lazyLoadEvent.getSortFields())
-						.sortDirection(lazyLoadEvent.toSortDirection())
-						.build())
+				.mapToObj(partitionNumber -> createPartition(lazyLoadEvent, partitionSize, maxSize, partitionNumber))
 				.filter(event -> event.getRows() > 0 && event.getFirst() < maxSize)
 				.collect(Collectors.toList());
+	}
+
+	private RQLPage createPartition(LazyLoadEvent lazyLoadEvent, int partitionSize, int maxSize, int partitionNumber) {
+		return RQLPage.builder()
+				.rows(Math.min(maxSize - (lazyLoadEvent.getFirst() + partitionSize * partitionNumber), partitionSize))
+				.first(Math.min(lazyLoadEvent.getFirst() + partitionSize * partitionNumber, maxSize))
+				.sortField(lazyLoadEvent.getSortField())
+				.sortFields(lazyLoadEvent.getSortFields())
+				.sortDirection(lazyLoadEvent.toSortDirection())
+				.build();
+	}
+
+	@NotNull
+	private List<RQLPage> lazyLoadEventToRQLPage(LazyLoadEvent lazyLoadEvent) {
+		return Collections.singletonList(RQLPage.builder()
+				.first(lazyLoadEvent.getFirst())
+				.rows(lazyLoadEvent.getRows())
+				.sortField(lazyLoadEvent.getSortField())
+				.sortFields(lazyLoadEvent.getSortFields())
+				.sortDirection(lazyLoadEvent.toSortDirection())
+				.build());
 	}
 
 }

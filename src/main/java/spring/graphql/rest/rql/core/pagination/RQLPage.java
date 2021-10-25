@@ -4,11 +4,11 @@ import lombok.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-@Builder
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RQLPage implements Pageable {
 	private int first;
 	private int rows;
@@ -43,7 +43,7 @@ public class RQLPage implements Pageable {
 	public Sort getSort() {
 		if (sort != null)
 			return sort;
-		if (sortField != null)
+		else if (sortField != null)
 			return Sort.by(sortDirection, sortField);
 		else if (sortFields != null)
 			return Sort.by(sortDirection, sortFields);

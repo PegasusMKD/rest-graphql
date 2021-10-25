@@ -23,10 +23,10 @@ public class RQLSyncInternal {
 		this.rqlInternal = rqlInternal;
 	}
 
-	public <T, K> T rqlSelect(QueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
+	public <T, K> T rqlSelect(QueryFunction<T> queryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
 		List<PropertyNode> propertyNodes = createPropertyNodes(parentType, attributePaths);
 
-		T queryResult = executeBaseQuery(syncQueryFunction, propertyNodes);
+		T queryResult = executeBaseQuery(queryFunction, propertyNodes);
 		List<K> queryData = extractor.extract(queryResult);
 
 		rqlInternal.processSubPartitions(propertyNodes, queryData, "");

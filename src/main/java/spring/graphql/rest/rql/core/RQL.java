@@ -9,6 +9,7 @@ import spring.graphql.rest.rql.core.internal.RQLAsyncInternal;
 import spring.graphql.rest.rql.core.internal.RQLSyncInternal;
 import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -21,6 +22,10 @@ public class RQL {
 	public RQL(RQLSyncInternal rqlSyncInternal, RQLAsyncInternal rqlAsyncInternal) {
 		this.rqlSyncInternal = rqlSyncInternal;
 		this.rqlAsyncInternal = rqlAsyncInternal;
+	}
+
+	public <K> K rqlSingleSelect(SyncQueryFunction<K> syncQueryFunction, Class<K> parentType, String... attributePaths) {
+		return rqlSelect(syncQueryFunction, Collections::singletonList, parentType, attributePaths);
 	}
 
 	public <T extends List<K>, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, Class<K> parentType, String... attributePaths) {

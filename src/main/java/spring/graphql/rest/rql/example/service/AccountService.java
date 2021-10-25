@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
-import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
@@ -55,8 +54,14 @@ public class AccountService {
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
-		Account entity = accountRepository.findById(id, EntityGraphUtility.getEagerEntityGraph(paths))
-				.orElseThrow(() -> new RuntimeException("Some exception"));
+		Account entity = rql.rqlSingleSelect(
+				(EntityGraph graph) -> accountRepository.findById(id, graph)
+						.orElseThrow(() -> new RuntimeException("Some exception")),
+				Account.class, attributePaths
+		);
+
+//		Account entity = accountRepository.findById(id, EntityGraphUtility.getEagerEntityGraph(paths))
+//				.orElseThrow(() -> new RuntimeException("Some exception"));
 
 		// Map properties
 		List<String> props = new ArrayList<>();
@@ -67,10 +72,15 @@ public class AccountService {
 	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
+//		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
+//		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
+//		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), EntityGraphUtility.getEagerEntityGraph(paths));
+
 		// Fetch data
 		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 1,
 				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
 				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
+
 
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);

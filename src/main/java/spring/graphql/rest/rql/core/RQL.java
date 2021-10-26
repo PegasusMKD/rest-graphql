@@ -25,7 +25,7 @@ public class RQL {
 	}
 
 	public <K> K rqlSingleSelect(SyncQueryFunction<K> syncQueryFunction, Class<K> parentType, String... attributePaths) {
-		return rqlSelect(syncQueryFunction, Collections::singletonList, parentType, attributePaths);
+		return rqlSelect(syncQueryFunction, Collections::singletonList, parentType, true, attributePaths);
 	}
 
 	public <T extends List<K>, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, Class<K> parentType, String... attributePaths) {
@@ -33,7 +33,11 @@ public class RQL {
 	}
 
 	public <T, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, String... attributePaths) {
-		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, attributePaths);
+		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, false, attributePaths);
+	}
+
+	public <T, K> T rqlSelect(SyncQueryFunction<T> syncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, boolean isSingle, String... attributePaths) {
+		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, isSingle, attributePaths);
 	}
 
 	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,

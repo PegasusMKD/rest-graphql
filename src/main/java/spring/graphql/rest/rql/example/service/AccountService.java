@@ -60,9 +60,6 @@ public class AccountService {
 				Account.class, attributePaths
 		);
 
-//		Account entity = accountRepository.findById(id, EntityGraphUtility.getEagerEntityGraph(paths))
-//				.orElseThrow(() -> new RuntimeException("Some exception"));
-
 		// Map properties
 		List<String> props = new ArrayList<>();
 		return universalMapper.toAccountDto(entity, new StringBuilder(), propertyNodes, props, "");

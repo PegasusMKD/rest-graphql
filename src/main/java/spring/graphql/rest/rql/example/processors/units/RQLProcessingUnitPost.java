@@ -1,14 +1,18 @@
 package spring.graphql.rest.rql.example.processors.units;
 
+import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.graphql.rest.rql.core.RQL;
+import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
 import spring.graphql.rest.rql.core.internal.RQLInternal;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.processing.RQLProcessingUnit;
-import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
 import spring.graphql.rest.rql.core.utility.GraphUtility;
+import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 import spring.graphql.rest.rql.example.models.Post;
 import spring.graphql.rest.rql.example.processors.repository.RQLPostRepository;
 
@@ -27,9 +31,12 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQLInternal rqlInternal;
 
-	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal) {
+	private final RQL rql;
+
+	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal, RQL rql) {
 		this.rqlPostRepository = rqlPostRepository;
 		this.rqlInternal = rqlInternal;
+		this.rql = rql;
 	}
 
 	@Override
@@ -39,9 +46,14 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
-		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
-		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
+		List<Post> result = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
+				(EntityGraph graph, Pageable pageable) -> rqlPostRepository.findAllByPostedByIdIn(ids, pageable, graph),
+				wrapper -> wrapper, LazyLoadEvent.builder().first(0)
+						.rows(rqlPostRepository.countAllByPostedByIdIn(ids))
+						.build(), Post.class, paths.toArray(new String[0]));
+
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);

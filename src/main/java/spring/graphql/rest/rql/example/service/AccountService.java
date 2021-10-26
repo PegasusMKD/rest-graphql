@@ -4,16 +4,13 @@ import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
-import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
 import spring.graphql.rest.rql.example.dto.PersonDto;
 import spring.graphql.rest.rql.example.dto.querydsl.OptionalBooleanBuilder;
@@ -64,7 +61,7 @@ public class AccountService {
 	}
 
 	@Transactional
-	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
+	public List<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
 //		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
@@ -72,9 +69,9 @@ public class AccountService {
 //		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), EntityGraphUtility.getEagerEntityGraph(paths));
 
 		// Fetch data
-		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
+		List<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
 				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
-				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
+				wrapper -> wrapper, prbe.getLazyLoadEvent(), Account.class, attributePaths);
 
 
 		// Get minimal number of attributePaths for entity graph
@@ -83,12 +80,13 @@ public class AccountService {
 		// Map properties
 		long startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
-		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page.getContent()),
+		List<AccountDto> content = new ArrayList<>(universalMapper.toAccountDtos(new HashSet<>(page),
 				new StringBuilder(), propertyNodes, props, ""));
 		long endTime = System.nanoTime();
 //		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
-		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
+//		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
+		return content;
 	}
 
 

@@ -9,10 +9,12 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.lang.NonNull;
 import spring.graphql.rest.rql.example.models.Account;
 
+import java.util.List;
+
 public interface AccountRepository extends EntityGraphJpaRepository<Account, String>, QuerydslPredicateExecutor<Account> {
 
 	@NonNull
-	Page<Account> findAll(@NonNull Predicate predicate, @NonNull Pageable pageable, EntityGraph graph);
+	List<Account> findAll(@NonNull Predicate predicate, @NonNull Pageable pageable, EntityGraph graph);
 
 	@NonNull
 	Page<Account> findAll(@NonNull Pageable pageable);

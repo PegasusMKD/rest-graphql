@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import spring.graphql.rest.rql.example.service.graphql.datafetchers.AccountsFetcher;
 import spring.graphql.rest.rql.example.service.graphql.datafetchers.CommentsFetcher;
 import spring.graphql.rest.rql.example.service.graphql.datafetchers.PostsFetcher;
+import spring.graphql.rest.rql.example.service.graphql.datafetchers.SingleAccountFetcher;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -21,14 +22,16 @@ import java.io.IOException;
 public class GraphQLService {
 
 	private final AccountsFetcher accountsFetcher;
+	private final SingleAccountFetcher singleAccountFetcher;
 	private final PostsFetcher postsFetcher;
 	private final CommentsFetcher commentsFetcher;
 	@Value("classpath:graphql/account.graphql")
 	Resource resource;
 	private GraphQL graphQL;
 
-	public GraphQLService(AccountsFetcher accountsFetcher, PostsFetcher postsFetcher, CommentsFetcher commentsFetcher) {
+	public GraphQLService(AccountsFetcher accountsFetcher, SingleAccountFetcher singleAccountFetcher, PostsFetcher postsFetcher, CommentsFetcher commentsFetcher) {
 		this.accountsFetcher = accountsFetcher;
+		this.singleAccountFetcher = singleAccountFetcher;
 		this.postsFetcher = postsFetcher;
 		this.commentsFetcher = commentsFetcher;
 	}
@@ -48,8 +51,8 @@ public class GraphQLService {
 						.dataFetcher("allAccounts", accountsFetcher)
 						.dataFetcher("allPosts", postsFetcher)
 						.dataFetcher("allComments", commentsFetcher)
-				)
-				.build();
+						.dataFetcher("account", singleAccountFetcher)
+				).build();
 	}
 
 	public GraphQL graphQL() {

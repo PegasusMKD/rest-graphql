@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static spring.graphql.rest.rql.core.utility.GraphUtility.createPropertyNodes;
 
@@ -51,7 +50,6 @@ public class AccountService {
 	public AccountDto findOne(String id, String[] attributePaths) {
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
-		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 
 		// Fetch data
 		Account entity = rql.rqlSingleSelect(
@@ -74,7 +72,7 @@ public class AccountService {
 //		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), EntityGraphUtility.getEagerEntityGraph(paths));
 
 		// Fetch data
-		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 1,
+		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
 				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
 				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
 

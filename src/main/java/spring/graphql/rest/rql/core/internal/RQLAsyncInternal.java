@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.interfaces.ValueExtractor;
@@ -93,9 +94,9 @@ public class RQLAsyncInternal {
 		return RQLPage.builder()
 				.rows(Math.min(maxSize - (lazyLoadEvent.getFirst() + partitionSize * partitionNumber), partitionSize))
 				.first(Math.min(lazyLoadEvent.getFirst() + partitionSize * partitionNumber, maxSize))
-				.sortField(lazyLoadEvent.getSortField())
+				.sortField(lazyLoadEvent.getSortField() != null ? lazyLoadEvent.getSortField() : "id")
 				.sortFields(lazyLoadEvent.getSortFields())
-				.sortDirection(lazyLoadEvent.toSortDirection())
+				.sortDirection(lazyLoadEvent.toSortDirection() != null ? lazyLoadEvent.toSortDirection() : Sort.Direction.ASC)
 				.build();
 	}
 
@@ -104,9 +105,9 @@ public class RQLAsyncInternal {
 		return Collections.singletonList(RQLPage.builder()
 				.first(lazyLoadEvent.getFirst())
 				.rows(lazyLoadEvent.getRows())
-				.sortField(lazyLoadEvent.getSortField())
+				.sortField(lazyLoadEvent.getSortField() != null ? lazyLoadEvent.getSortField() : "id")
 				.sortFields(lazyLoadEvent.getSortFields())
-				.sortDirection(lazyLoadEvent.toSortDirection())
+				.sortDirection(lazyLoadEvent.toSortDirection() != null ? lazyLoadEvent.toSortDirection() : Sort.Direction.ASC)
 				.build());
 	}
 

@@ -63,7 +63,6 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
 								.rows(rqlCommentRepository.countAllByAccountIdIn(ids))
 								.build(), Comment.class, paths.toArray(new String[0]));
-
 			case "post":
 				return rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
 						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByPostIdIn(ids, pageable, graph),

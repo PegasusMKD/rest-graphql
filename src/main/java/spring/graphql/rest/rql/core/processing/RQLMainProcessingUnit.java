@@ -25,11 +25,11 @@ import static spring.graphql.rest.rql.core.utility.GenericsUtility.*;
 @Service
 public class RQLMainProcessingUnit {
 
+	@Value("${rql.partition.elements.max-count}")
+	private Integer maxPartitionCount;
 	public static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 	private final RQLProcessingUnitDistributor processingUnitDistributor;
 	private final Logger logger = LoggerFactory.getLogger(RQLMainProcessingUnit.class);
-	@Value("${rql.partition.elements.max-count}")
-	private Integer maxPartitionCount;
 
 	public RQLMainProcessingUnit(RQLProcessingUnitDistributor processingUnitDistributor) {
 		this.processingUnitDistributor = processingUnitDistributor;

@@ -40,11 +40,6 @@ public class RQLSyncInternal {
 
 
 	private <T> T executeBaseQuery(QueryFunction<T> queryFunction, List<PropertyNode> propertyNodes, boolean isSingle) {
-		// TODO: Check if all requirements are met
-		//  - Only one record
-		//  - Only one OM relation for the parent (and all subsequent relations)
-		//  then just do an eager call since it's more efficient
-		//  ELSE, continue existing method
 		List<PropertyNode> currentPartition = getCurrentValidPartition(propertyNodes, "")
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = currentPartition.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());

@@ -1,6 +1,5 @@
 package spring.graphql.rest.rql.core;
 
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import spring.graphql.rest.rql.core.interfaces.ValueExtractor;
 import spring.graphql.rest.rql.core.interfaces.query.functions.AsyncQueryFunction;
@@ -40,8 +39,8 @@ public class RQL {
 		return rqlSyncInternal.rqlSelect(syncQueryFunction::execute, extractor, parentType, isSingle, attributePaths);
 	}
 
-	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor,
-																   LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
-		return rqlAsyncInternal.asyncRQLSelectPagination(restrictedBy, amount, asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
+	public <T extends Iterable<K>, K> T asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction,
+																 ValueExtractor<T, K> extractor, LazyLoadEvent lazyLoadEvent, Class<K> parentType, String... attributePaths) {
+		return (T) rqlAsyncInternal.asyncRQLSelectPagination(restrictedBy, amount, asyncQueryFunction, extractor, lazyLoadEvent, parentType, attributePaths);
 	}
 }

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class RQLAsyncInternal {
@@ -27,9 +28,9 @@ public class RQLAsyncInternal {
 		this.rqlSyncInternal = rqlSyncInternal;
 	}
 
-	public <T extends Page<K>, K> Page<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction,
-																   ValueExtractor<T, K> extractor, LazyLoadEvent lazyLoadEvent, Class<K> parentType,
-																   String... attributePaths) {
+	public <T extends Iterable<K>, K> Iterable<K> asyncRQLSelectPagination(RQLAsyncRestriction restrictedBy, int amount, AsyncQueryFunction<T> asyncQueryFunction,
+																		   ValueExtractor<T, K> extractor, LazyLoadEvent lazyLoadEvent, Class<K> parentType,
+																		   String... attributePaths) {
 		List<RQLPage> events = partitionPagination(restrictedBy, amount, lazyLoadEvent);
 		List<CompletableFuture<T>> fetches = events.stream()
 				.map((event) -> asyncRQLSelectWrap(asyncQueryFunction, extractor, parentType, event, attributePaths))
@@ -38,22 +39,27 @@ public class RQLAsyncInternal {
 	}
 
 	@NotNull
-	private <T extends Page<K>, K> CompletableFuture<T> asyncRQLSelectWrap(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, RQLPage event, String[] attributePaths) {
+	private <T extends Iterable<K>, K> CompletableFuture<T> asyncRQLSelectWrap(AsyncQueryFunction<T> asyncQueryFunction, ValueExtractor<T, K> extractor, Class<K> parentType, RQLPage event, String[] attributePaths) {
 		return CompletableFuture.supplyAsync(() ->
 				rqlSyncInternal.rqlSelect((EntityGraph graph) ->
 								asyncQueryFunction.execute(graph, event),
 						extractor, parentType, attributePaths));
 	}
 
-	<T extends Page<K>, K> Page<K> combinePages(List<CompletableFuture<T>> fetches, Pageable pageable) {
+	<T extends Iterable<K>, K> Iterable<K> combinePages(List<CompletableFuture<T>> fetches, Pageable pageable) {
 		CompletableFuture.allOf(fetches.toArray(new CompletableFuture[0])).join();
-		List<T> pages = fetches.stream()
+		List<T> results = fetches.stream()
 				.map(future -> future.getNow(null))
 				.collect(Collectors.toList());
-		List<K> data = pages.stream()
-				.flatMap(page -> page.getContent().stream())
+		List<K> data = results.stream()
+				.flatMap(items -> StreamSupport.stream(items.spliterator(), false))
 				.collect(Collectors.toList());
-		return new PageImpl<>(data, pageable, pages.get(0).getTotalElements());
+		T possiblePage = results.get(0);
+
+		if (possiblePage instanceof Page) {
+			return new PageImpl<>(data, pageable, ((Page<?>) possiblePage).getTotalElements());
+		}
+		return data;
 	}
 
 	List<RQLPage> partitionPagination(RQLAsyncRestriction restrictedBy, int amount, LazyLoadEvent lazyLoadEvent) {

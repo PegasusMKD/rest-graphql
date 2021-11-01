@@ -14,9 +14,9 @@ public class RQLPage implements Pageable {
 	private int rows;
 	private Sort sort;
 
-	private String sortField;
+	private String sortField = "id";
 	private String[] sortFields;
-	private Sort.Direction sortDirection;
+	private Sort.Direction sortDirection = Sort.Direction.ASC;
 
 	public RQLPage(int first, int rows, Sort sort) {
 		if (first < 0) throw new IllegalArgumentException("Page offset must not be less than zero!");

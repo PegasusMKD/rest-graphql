@@ -6,6 +6,7 @@ type Query {
     allAccounts(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponseAccount
     allComments(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponseComment
     allPosts(first: Int, rows: Int, sortField: String, sortFields: [String], sortOrder: Int): PageResponsePost
+    account(id: String!): Account
 }
 
 # Temporary solution (avoiding using unions), since all of this is just for testing

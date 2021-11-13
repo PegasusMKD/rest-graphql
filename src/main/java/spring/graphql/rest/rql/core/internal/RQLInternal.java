@@ -1,15 +1,15 @@
-package spring.graphql.rest.nonoptimized.core;
+package spring.graphql.rest.rql.core.internal;
 
 import org.springframework.stereotype.Service;
-import spring.graphql.rest.nonoptimized.core.nodes.PropertyNode;
-import spring.graphql.rest.nonoptimized.core.processing.RQLMainProcessingUnit;
-import spring.graphql.rest.nonoptimized.core.utility.GenericsUtility;
+import spring.graphql.rest.rql.core.nodes.PropertyNode;
+import spring.graphql.rest.rql.core.processing.RQLMainProcessingUnit;
+import spring.graphql.rest.rql.core.utility.GenericsUtility;
 
 import java.lang.invoke.MethodHandle;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static spring.graphql.rest.nonoptimized.core.utility.GraphUtility.getCurrentValidPartition;
+import static spring.graphql.rest.rql.core.utility.GraphUtility.getCurrentValidPartition;
 
 @Service
 public class RQLInternal {
@@ -40,26 +40,28 @@ public class RQLInternal {
 	/**
 	 * Method to find the sub-elements of the parents.
 	 * <br/>
-	 * This is needed for situations like having (post) as base entity, and querying comments.post.comments
+	 * This is needed for situations like having the entity (Post) as the base, and querying comments.post.comments
 	 * (comments.post gets fetched in one query, so the next "in-line" are the comments as parents, while we need the posts).
 	 */
 	private <K> List<?> findProperParents(List<K> parents, PropertyNode nextNode, String currentPath) throws NoSuchMethodException, IllegalAccessException {
-		if (nextNode.getParentPropertyPath().equals(currentPath) || currentPath.equals("")) return parents;
+		if (nextNode.getParentPropertyPath().equals("") || currentPath.equals(nextNode.getParentPropertyPath()))
+			return parents;
 
 		String leftoverPath = nextNode.getParentPropertyPath().substring(currentPath.length() + 1);
 		String[] properties = leftoverPath.split("\\.");
-		List<?> lastIteration = parents;
+
+		List<?> latestParents = parents;
 		for (String property : properties) {
-			Class<?> parentType = lastIteration.get(0).getClass();
+			Class<?> parentType = latestParents.get(0).getClass();
 			Class<?> childType = GenericsUtility.findActualChildType(parentType, property);
 			MethodHandle getter = GenericsUtility.findGetter(parentType, childType, property);
 
-			lastIteration = lastIteration.stream()
+			latestParents = latestParents.stream()
 					.map(item -> GenericsUtility.invokeHandle(childType, getter, item))
 					.collect(Collectors.toList());
 		}
 
-		return lastIteration;
+		return latestParents;
 	}
 
 }

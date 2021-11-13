@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>spring.graphql.rest</groupId>
-    <artifactId>non-optimized</artifactId>
+    <artifactId>rql</artifactId>
     <version>1.0.0</version>
-    <name>non-optimized</name>
+    <name>rql</name>
     <description>Baseline version for REST GraphQL implementation</description>
 
     <properties>
@@ -73,10 +73,10 @@
         <!--            <version>1.7.4</version>-->
         <!--        </dependency>-->
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-actuator</artifactId>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
         <!-- -->
 
@@ -152,6 +152,10 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.10</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
 
     </dependencies>
 
@@ -225,6 +229,11 @@
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${org.mapstruct.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>2.0.4.RELEASE</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>

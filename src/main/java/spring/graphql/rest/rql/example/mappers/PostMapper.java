@@ -24,7 +24,7 @@ public abstract class PostMapper {
 	public abstract Set<PostDto> toPostDtos(Set<Post> entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 
 	@Named("dynamicPosts")
-	@Mapping(target = "postedBy", expression = "java(properties.contains(\"postedBy\") ? accountMapper.toAccountDto(entity.getPostedBy(), currentPath, propertyNodes, properties, \"postedBy\") : null)")
+	@Mapping(target = "postedBy", expression = "java(properties.contains(\"postedBy\") ? accountMapper.rqlToAccountDto(entity.getPostedBy(), currentPath, propertyNodes, properties, \"postedBy\") : null)")
 	@Mapping(target = "comments", expression = "java(properties.contains(\"comments\") ? commentMapper.toCommentDtos(entity.getComments(), currentPath, propertyNodes, properties, \"comments\") : null)")
 	public abstract PostDto toPostDto(Post entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 

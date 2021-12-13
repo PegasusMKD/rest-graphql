@@ -4,6 +4,11 @@
       "name": "rql.partition.elements.max-count",
       "type": "java.lang.Integer",
       "description": "Amount of records being used per map within the multi-threaded mapping inside of RQL."
+    },
+    {
+      "name": "rql.base-model-package",
+      "type": "java.lang.String",
+      "description": "Path to the folder for the entities/models. If entities are located in multiple different packages, use a wildcard (for now) (*)."
     }
   ]
 }

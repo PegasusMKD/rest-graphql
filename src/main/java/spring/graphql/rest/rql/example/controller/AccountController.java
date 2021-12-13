@@ -16,8 +16,6 @@ import spring.graphql.rest.rql.example.service.CommentService;
 import spring.graphql.rest.rql.example.service.DatabaseService;
 import spring.graphql.rest.rql.example.service.PostService;
 
-import java.util.List;
-
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @Controller
@@ -42,17 +40,14 @@ public class AccountController {
 	}
 
 	@PostMapping(value = "/page")
-	public ResponseEntity<List<AccountDto>> findAllAccounts(@RequestBody(required = false) PageRequestByExample<AccountDto> prbe,
-															@RequestParam(required = false) String... attributePaths) {
+	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestBody(required = false) PageRequestByExample<AccountDto> prbe,
+																	@RequestParam(required = false) String... attributePaths) {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
 		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
 		ControllerSupport.defaultLazyLoadEvent(prbe);
 
-//		long startTime = System.nanoTime();
-		List<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
-//		long endTime = System.nanoTime();
-//		logger.info("Total time: {} s", (endTime - startTime) / 1000000000.);
+		PageResponse<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
 	}
 

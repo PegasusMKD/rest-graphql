@@ -17,9 +17,9 @@ public abstract class RealAccountMapper {
 	protected AccountMapper accountMapper;
 
 	@IterableMapping(qualifiedByName = "accountToDto")
-	public abstract Collection<AccountDto> toAccountDtos(Collection<Account> entities,
-														 @Context List<PropertyNode> propertyNodes);
+	public abstract Collection<AccountDto> toAccountDtos(Collection<Account> entities, @Context List<PropertyNode> propertyNodes);
 
+	// @InheritConfiguration(name = "rqlToAccountDto")
 	@Named("accountToDto")
 	public AccountDto toAccountDto(Account entity, @Context List<PropertyNode> propertyNodes) {
 		entity.setUsername(null);

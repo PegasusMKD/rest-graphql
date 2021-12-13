@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
-import spring.graphql.rest.rql.core.restrict.RestrictRepository;
+import spring.graphql.rest.rql.core.restrict.aop.RQLAOPRestrict;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
@@ -39,20 +39,19 @@ public class AccountService {
 	private final AccountRepository accountRepository;
 	private final RealAccountMapper accountMapper;
 	private final RQL rql;
-	private final RestrictRepository repository;
 
 	public AccountService(AccountRepository accountRepository,
-						  RealAccountMapper accountMapper, RQL rql, RestrictRepository repository) {
+						  RealAccountMapper accountMapper, RQL rql) {
 		this.accountRepository = accountRepository;
 		this.accountMapper = accountMapper;
 		this.rql = rql;
-		this.repository = repository;
 	}
 
+	@RQLAOPRestrict(type = Account.class)
 	public AccountDto findOne(String id, String[] attributePaths) {
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
-		repository.filter(Account.class, attributePaths);
+//		repository.filter(Account.class, attributePaths);
 
 		// Fetch data
 		Account entity = rql.rqlSingleSelect(

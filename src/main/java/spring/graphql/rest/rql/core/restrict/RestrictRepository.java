@@ -21,6 +21,7 @@ public class RestrictRepository {
 
 	private final HashMap<String, Set<String>> bannedKeywords = new HashMap<>();
 	private final HashSet<String> bannedChildKeywords = new HashSet<>();
+
 	@Value("${rql.base-model-package}")
 	public String baseModelPackage;
 

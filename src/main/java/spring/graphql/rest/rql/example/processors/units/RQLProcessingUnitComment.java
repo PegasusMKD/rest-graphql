@@ -1,19 +1,16 @@
 package spring.graphql.rest.rql.example.processors.units;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
-import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
 import spring.graphql.rest.rql.core.internal.RQLInternal;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
 import spring.graphql.rest.rql.core.processing.RQLProcessingUnit;
+import spring.graphql.rest.rql.core.utility.EntityGraphUtility;
 import spring.graphql.rest.rql.core.utility.GraphUtility;
-import spring.graphql.rest.rql.example.controller.rest.LazyLoadEvent;
 import spring.graphql.rest.rql.example.models.Comment;
 import spring.graphql.rest.rql.example.processors.repository.RQLCommentRepository;
 
@@ -58,17 +55,19 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 	private List<Comment> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
 		switch (parentAccessProperty) {
 			case "account":
-				return rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
-						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByAccountIdIn(ids, pageable, graph),
-						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
-								.rows(rqlCommentRepository.countAllByAccountIdIn(ids))
-								.build(), Comment.class, paths.toArray(new String[0]));
+				return rqlCommentRepository.findAllByAccountIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
+//						rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
+//						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByAccountIdIn(ids, pageable, graph),
+//						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
+//								.rows(rqlCommentRepository.countAllByAccountIdIn(ids))
+//								.build(), Comment.class, paths.toArray(new String[0]));
 			case "post":
-				return rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
-						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByPostIdIn(ids, pageable, graph),
-						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
-								.rows(rqlCommentRepository.countAllByPostIdIn(ids))
-								.build(), Comment.class, paths.toArray(new String[0]));
+				return rqlCommentRepository.findAllByPostIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
+//				rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
+//						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByPostIdIn(ids, pageable, graph),
+//						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
+//								.rows(rqlCommentRepository.countAllByPostIdIn(ids))
+//								.build(), Comment.class, paths.toArray(new String[0]));
 		}
 
 		throw new RuntimeException();

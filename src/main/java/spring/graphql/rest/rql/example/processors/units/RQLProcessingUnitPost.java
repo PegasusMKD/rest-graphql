@@ -3,6 +3,7 @@ package spring.graphql.rest.rql.example.processors.units;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.dto.TransferResultDto;
 import spring.graphql.rest.rql.core.internal.RQLInternal;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
@@ -27,9 +28,12 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQLInternal rqlInternal;
 
-	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal) {
+	private final RQL rql;
+
+	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal, RQL rql) {
 		this.rqlPostRepository = rqlPostRepository;
 		this.rqlInternal = rqlInternal;
+		this.rql = rql;
 	}
 
 	@Override
@@ -39,9 +43,15 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
-		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
-		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
+//		List<Post> result = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
+//				(EntityGraph graph, Pageable pageable) -> rqlPostRepository.findAllByPostedByIdIn(ids, pageable, graph),
+//				wrapper -> wrapper, LazyLoadEvent.builder().first(0)
+//						.rows(rqlPostRepository.countAllByPostedByIdIn(ids))
+//						.build(), Post.class, paths.toArray(new String[0]));
+		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
+
+		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);

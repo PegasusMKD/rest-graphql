@@ -14,4 +14,8 @@ public interface RQLCommentRepository extends EntityGraphJpaRepository<Comment, 
 
 	List<Comment> findAllByAccountIdIn(Set<String> ids, EntityGraph graph);
 
+	int countAllByPostIdIn(Set<String> ids);
+
+	int countAllByAccountIdIn(Set<String> ids);
+
 }

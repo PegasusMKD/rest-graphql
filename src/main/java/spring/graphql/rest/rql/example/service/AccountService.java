@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spring.graphql.rest.rql.core.RQL;
 import spring.graphql.rest.rql.core.RQLAsyncRestriction;
 import spring.graphql.rest.rql.core.nodes.PropertyNode;
-import spring.graphql.rest.rql.core.restrict.aop.RQLAOPRestrict;
 import spring.graphql.rest.rql.example.controller.rest.PageRequestByExample;
 import spring.graphql.rest.rql.example.controller.rest.PageResponse;
 import spring.graphql.rest.rql.example.dto.AccountDto;
@@ -47,7 +46,7 @@ public class AccountService {
 		this.rql = rql;
 	}
 
-	@RQLAOPRestrict(type = Account.class)
+//	@RQLAOPRestrict(type = Account.class)
 	public AccountDto findOne(String id, String[] attributePaths) {
 		// Get minimal number of attributePaths for entity graph
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
@@ -68,10 +67,6 @@ public class AccountService {
 	public PageResponse<AccountDto> findAllAccounts(PageRequestByExample<AccountDto> prbe, String[] attributePaths) {
 		AccountDto example = prbe.getExample() != null ? prbe.getExample() : new AccountDto();
 
-//		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
-//		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
-//		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), EntityGraphUtility.getEagerEntityGraph(paths));
-
 		// Fetch data
 		Page<Account> page = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
 				(EntityGraph graph, Pageable pageable) -> accountRepository.findAll(makeFilter(example), pageable, graph),
@@ -82,10 +77,7 @@ public class AccountService {
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 
 		// Map properties
-		long startTime = System.nanoTime();
 		List<AccountDto> content = new ArrayList<>(accountMapper.toAccountDtos(page.getContent(), propertyNodes));
-		long endTime = System.nanoTime();
-//		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}

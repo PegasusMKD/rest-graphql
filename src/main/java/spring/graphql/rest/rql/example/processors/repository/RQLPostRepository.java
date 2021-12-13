@@ -11,4 +11,6 @@ import java.util.Set;
 public interface RQLPostRepository extends EntityGraphJpaRepository<Post, String>, QuerydslPredicateExecutor<Post> {
 
 	List<Post> findAllByPostedByIdIn(Set<String> ids, EntityGraph entityGraph);
+
+	int countAllByPostedByIdIn(Set<String> ids);
 }

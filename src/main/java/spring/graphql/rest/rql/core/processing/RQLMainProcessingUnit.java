@@ -17,10 +17,12 @@ import java.lang.invoke.MethodType;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static spring.graphql.rest.rql.core.utility.GenericsUtility.*;
+
 
 @Service
 public class RQLMainProcessingUnit {
@@ -98,7 +100,7 @@ public class RQLMainProcessingUnit {
 	private Map<Object, ? extends Set<?>> groupByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
 		return new ConcurrentHashMap<>(children.stream().collect(groupingBy(child ->
 						invokeHandle(String.class, idGetter, invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
-				, toSet())));
+				, Collectors.toSet())));
 	}
 
 	private <T> void addChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenAdder, MethodHandle childrenGetter, T parent) {

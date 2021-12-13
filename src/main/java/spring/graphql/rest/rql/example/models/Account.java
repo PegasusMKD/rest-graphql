@@ -5,12 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.GenericGenerator;
+import spring.graphql.rest.rql.core.restrict.RQLRestrict;
 
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@RQLRestrict(value = "person")
 @NoArgsConstructor
 @Entity(name = "Account")
 @Table(name = "account")

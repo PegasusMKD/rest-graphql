@@ -31,7 +31,7 @@ public class RQLInternal {
 					try {
 						rqlMainProcessingUnit.process(findProperParents(parents, node, currentPath), node, propertyNodes);
 					} catch (NoSuchMethodException | IllegalAccessException e) {
-//						TODO: Implement proper error-handling
+						// TODO: Implement proper error-handling
 						e.printStackTrace();
 					}
 				});

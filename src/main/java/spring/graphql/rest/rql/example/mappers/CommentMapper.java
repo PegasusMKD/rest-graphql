@@ -25,7 +25,7 @@ public abstract class CommentMapper {
 	public abstract Set<CommentDto> toCommentDtos(Set<Comment> entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 
 	@Named("dynamicComments")
-	@Mapping(target = "account", expression = "java(properties.contains(\"account\") ? accountMapper.toAccountDto(entity.getAccount(), currentPath, propertyNodes, properties, \"account\") : null)")
+	@Mapping(target = "account", expression = "java(properties.contains(\"account\") ? accountMapper.rqlToAccountDto(entity.getAccount(), currentPath, propertyNodes, properties, \"account\") : null)")
 	@Mapping(target = "post", expression = "java(properties.contains(\"post\") ? postMapper.toPostDto(entity.getPost(), currentPath, propertyNodes, properties, \"post\") : null)")
 	public abstract CommentDto toCommentDto(Comment entity, @Context StringBuilder currentPath, @Context List<PropertyNode> propertyNodes, @Context List<String> properties, @Context String property);
 

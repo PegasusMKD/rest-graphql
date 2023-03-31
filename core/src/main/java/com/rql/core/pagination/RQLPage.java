@@ -68,7 +68,7 @@ public class RQLPage implements Pageable {
 
 	@Override
 	public @NotNull Pageable withPage(int pageNumber) {
-		return null;
+		return new RQLPage(first * pageNumber, getPageSize(), getSort());
 	}
 
 	public boolean hasPrevious() {

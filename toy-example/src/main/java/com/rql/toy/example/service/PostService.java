@@ -1,10 +1,11 @@
 package com.rql.toy.example.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.rest.graphql.rql.core.RQL;
-import com.rest.graphql.rql.core.nodes.PropertyNode;
+import com.rql.core.RQL;
+import com.rql.core.nodes.PropertyNode;
 import com.rql.toy.example.models.QPost;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -24,28 +25,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes;
+import static com.rql.core.utility.GraphUtility.createPropertyNodes;
 
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
 	private Logger logger = LoggerFactory.getLogger(PostService.class);
 
 	private final PostRepository postRepository;
 
-	private final PostMapper postMapper;
-
 	private final AccountService accountService;
 
 	private final RQL rql;
-
-	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService, RQL rql) {
-		this.postRepository = postRepository;
-		this.postMapper = postMapper;
-		this.accountService = accountService;
-		this.rql = rql;
-	}
 
 	private BooleanExpression makeFilter(PostDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();
@@ -82,7 +75,7 @@ public class PostService {
 		// Map properties
 		startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
-		List<PostDto> content = new ArrayList<>(postMapper.toPostDtos(new HashSet<>(page.getContent()),
+		List<PostDto> content = new ArrayList<>(PostMapper.INSTANCE.toPostDtos(new HashSet<>(page.getContent()),
 				new StringBuilder(), propertyNodes, props, ""));
 		endTime = System.nanoTime();
 		logger.info("Mapping of paths took: {} ms -- Posts", (endTime - startTime) / 1000000);

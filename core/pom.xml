@@ -7,17 +7,18 @@
         <artifactId>rql-parent</artifactId>
         <version>1.0.0</version>
     </parent>
-    <groupId>com.rql</groupId>
     <artifactId>core</artifactId>
     <version>1.0.0</version>
     <name>core</name>
     <description>core</description>
     <properties>
-        <java.version>8</java.version>
+        <java.version>17</java.version>
         <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
-        <querydsl.version>5.0.0</querydsl.version>
-        <org.projectlombok.version>1.18.10</org.projectlombok.version>
+        <org.projectlombok.version>1.18.26</org.projectlombok.version>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <spring-data-jpa-entity-graph.version>3.0.1</spring-data-jpa-entity-graph.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -34,7 +35,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-            <version>1.18.10</version>
+            <version>${org.projectlombok.version}</version>
         </dependency>
 
         <dependency>
@@ -48,21 +49,21 @@
 
         <!--        Needed for core           -->
         <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-apt</artifactId>
-            <version>${querydsl.version}</version>
+            <groupId>com.cosium.spring.data</groupId>
+            <artifactId>spring-data-jpa-entity-graph</artifactId>
+            <version>${spring-data-jpa-entity-graph.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+            <version>6.1.7.Final</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.querydsl</groupId>
-            <artifactId>querydsl-jpa</artifactId>
-            <version>${querydsl.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.cosium.spring.data</groupId>
-            <artifactId>spring-data-jpa-entity-graph</artifactId>
-            <version>2.3.1</version>
+            <artifactId>spring-data-jpa-entity-graph-generator</artifactId>
+            <version>${spring-data-jpa-entity-graph.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
@@ -77,24 +78,56 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>17.0.0</version>
+            <version>24.0.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${org.projectlombok.version}</version>
+                        </annotationProcessorPath>
+                        <annotationProcessorPath>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </annotationProcessorPath>
+                        <annotationProcessorPath>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>3.0.5</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <compilerArg>-Amapstruct.unmappedTargetPolicy=WARN</compilerArg>
+                    </compilerArgs>
+                    <generatedSourcesDirectory>target/generated-sources/java</generatedSourcesDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -1,15 +1,15 @@
 package com.rql.toy.example.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraphType;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.rest.graphql.rql.core.nodes.PropertyNode;
+import com.rql.core.nodes.PropertyNode;
 import com.rql.toy.example.controller.rest.PageRequestByExample;
 import com.rql.toy.example.controller.rest.PageResponse;
 import com.rql.toy.example.dto.CommentDto;
 import com.rql.toy.example.models.QComment;
 import com.rql.toy.example.repository.CommentRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -25,28 +25,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes;
+import static com.rql.core.utility.GraphUtility.createPropertyNodes;
 
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
 	private Logger logger = LoggerFactory.getLogger(CommentService.class);
 
 	private final CommentRepository commentRepository;
 
-	private final CommentMapper commentMapper;
-
 	private final PostService postService;
 
 	private final AccountService accountService;
-
-	public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, PostService postService, AccountService accountService) {
-		this.commentRepository = commentRepository;
-		this.commentMapper = commentMapper;
-		this.postService = postService;
-		this.accountService = accountService;
-	}
 
 	private BooleanExpression makeFilter(CommentDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();
@@ -79,12 +71,12 @@ public class CommentService {
 
 		// Fetch data
 		Page<Comment> page = commentRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
-				EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])));
+				DynamicEntityGraph.NOOP : DynamicEntityGraph.builder(EntityGraphType.LOAD).addPath(paths.toArray(new String[0])).build());
 
 		// Map properties
 		startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
-		List<CommentDto> content = new ArrayList<>(commentMapper.toCommentDtos(new HashSet<>(page.getContent()),
+		List<CommentDto> content = new ArrayList<>(CommentMapper.INSTANCE.toCommentDtos(new HashSet<>(page.getContent()),
 				new StringBuilder(), propertyNodes, props, ""));
 		endTime = System.nanoTime();
 		logger.info("Mapping of paths took: {} ms -- Comments", (endTime - startTime) / 1000000);

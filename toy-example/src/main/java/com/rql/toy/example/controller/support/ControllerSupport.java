@@ -1,6 +1,6 @@
 package com.rql.toy.example.controller.support;
 
-import com.rest.graphql.rql.core.dto.LazyLoadEvent;
+import com.rql.core.dto.LazyLoadEvent;
 import com.rql.toy.example.controller.rest.PageRequestByExample;
 
 public class ControllerSupport {

@@ -11,6 +11,7 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Service
+@RequiredArgsConstructor
 public class GraphQLService {
 
 	private final AccountsFetcher accountsFetcher;
@@ -29,12 +31,6 @@ public class GraphQLService {
 	Resource resource;
 	private GraphQL graphQL;
 
-	public GraphQLService(AccountsFetcher accountsFetcher, SingleAccountFetcher singleAccountFetcher, PostsFetcher postsFetcher, CommentsFetcher commentsFetcher) {
-		this.accountsFetcher = accountsFetcher;
-		this.singleAccountFetcher = singleAccountFetcher;
-		this.postsFetcher = postsFetcher;
-		this.commentsFetcher = commentsFetcher;
-	}
 
 	@PostConstruct
 	private void loadSchemas() throws IOException {

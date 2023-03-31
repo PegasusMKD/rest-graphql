@@ -1,8 +1,9 @@
 package com.rql.toy.example.service.graphql.datafetchers;
 
-import com.rest.graphql.rql.core.dto.LazyLoadEvent;
+import com.rql.core.dto.LazyLoadEvent;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,10 @@ import com.rql.toy.example.repository.CommentRepository;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class CommentsFetcher implements DataFetcher<PageResponse<Comment>> {
 
 	private final CommentRepository repository;
-
-	public CommentsFetcher(CommentRepository repository) {
-		this.repository = repository;
-	}
 
 	@Override
 	public PageResponse<Comment> get(DataFetchingEnvironment dataFetchingEnvironment) {

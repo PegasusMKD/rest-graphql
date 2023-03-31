@@ -1,6 +1,6 @@
 package com.rql.toy.example.service.graphql.datafetchers;
 
-import com.rest.graphql.rql.core.dto.LazyLoadEvent;
+import com.rql.core.dto.LazyLoadEvent;
 import graphql.schema.DataFetchingEnvironment;
 
 public class LazyLoadEventHelper {

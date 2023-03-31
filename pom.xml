@@ -15,10 +15,6 @@
     <name>rql-parent</name>
     <description>Baseline version for REST GraphQL implementation</description>
 
-    <properties>
-        <java.version>1.8</java.version>
-    </properties>
-
     <modules>
         <module>core</module>
         <module>toy-example</module>

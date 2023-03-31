@@ -1,13 +1,14 @@
 package com.rql.toy.example.processors.units;
 
-import com.rest.graphql.rql.core.RQL;
-import com.rest.graphql.rql.core.dto.TransferResultDto;
-import com.rest.graphql.rql.core.internal.RQLInternal;
-import com.rest.graphql.rql.core.nodes.PropertyNode;
-import com.rest.graphql.rql.core.processing.RQLProcessingUnit;
-import com.rest.graphql.rql.core.utility.EntityGraphUtility;
-import com.rest.graphql.rql.core.utility.GraphUtility;
+import com.rql.core.RQL;
+import com.rql.core.dto.TransferResultDto;
+import com.rql.core.internal.RQLInternal;
+import com.rql.core.nodes.PropertyNode;
+import com.rql.core.processing.RQLProcessingUnit;
+import com.rql.core.utility.EntityGraphUtility;
+import com.rql.core.utility.GraphUtility;
 import com.rql.toy.example.models.Post;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,11 +18,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.rest.graphql.rql.core.utility.GraphUtility.*;
+import static com.rql.core.utility.GraphUtility.*;
 
 // TODO: Implement separation by property
 @Service
 @Qualifier("RQLPost")
+@RequiredArgsConstructor
 public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQLPostRepository rqlPostRepository;
@@ -29,12 +31,6 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 	private final RQLInternal rqlInternal;
 
 	private final RQL rql;
-
-	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal, RQL rql) {
-		this.rqlPostRepository = rqlPostRepository;
-		this.rqlInternal = rqlInternal;
-		this.rql = rql;
-	}
 
 	@Override
 	@Transactional(readOnly = true)

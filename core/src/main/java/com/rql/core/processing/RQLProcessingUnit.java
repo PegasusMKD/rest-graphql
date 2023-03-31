@@ -15,4 +15,6 @@ public interface RQLProcessingUnit<T> {
 
 	TransferResultDto<T> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty);
 
+	List<T> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths);
+
 }

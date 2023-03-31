@@ -3,6 +3,7 @@ package com.rql.toy.example.service.graphql.datafetchers;
 import com.rest.graphql.rql.core.dto.LazyLoadEvent;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,10 @@ import com.rql.toy.example.repository.AccountRepository;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class AccountsFetcher implements DataFetcher<PageResponse<Account>> {
 
 	private final AccountRepository repository;
-
-	public AccountsFetcher(AccountRepository repository) {
-		this.repository = repository;
-	}
 
 	@Override
 	public PageResponse<Account> get(DataFetchingEnvironment dataFetchingEnvironment) {

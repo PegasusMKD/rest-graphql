@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.rest.graphql.rql.core.RQL;
 import com.rest.graphql.rql.core.nodes.PropertyNode;
 import com.rql.toy.example.models.QPost;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,7 @@ import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes
 
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
 	private Logger logger = LoggerFactory.getLogger(PostService.class);
@@ -39,13 +41,6 @@ public class PostService {
 	private final AccountService accountService;
 
 	private final RQL rql;
-
-	public PostService(PostRepository postRepository, PostMapper postMapper, AccountService accountService, RQL rql) {
-		this.postRepository = postRepository;
-		this.postMapper = postMapper;
-		this.accountService = accountService;
-		this.rql = rql;
-	}
 
 	private BooleanExpression makeFilter(PostDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();

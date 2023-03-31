@@ -10,6 +10,7 @@ import com.rql.toy.example.controller.rest.PageResponse;
 import com.rql.toy.example.dto.CommentDto;
 import com.rql.toy.example.models.QComment;
 import com.rql.toy.example.repository.CommentRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,7 @@ import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes
 
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
 	private Logger logger = LoggerFactory.getLogger(CommentService.class);
@@ -40,13 +42,6 @@ public class CommentService {
 	private final PostService postService;
 
 	private final AccountService accountService;
-
-	public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, PostService postService, AccountService accountService) {
-		this.commentRepository = commentRepository;
-		this.commentMapper = commentMapper;
-		this.postService = postService;
-		this.accountService = accountService;
-	}
 
 	private BooleanExpression makeFilter(CommentDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();

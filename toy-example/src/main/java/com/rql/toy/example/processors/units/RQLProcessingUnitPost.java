@@ -8,6 +8,7 @@ import com.rest.graphql.rql.core.processing.RQLProcessingUnit;
 import com.rest.graphql.rql.core.utility.EntityGraphUtility;
 import com.rest.graphql.rql.core.utility.GraphUtility;
 import com.rql.toy.example.models.Post;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import static com.rest.graphql.rql.core.utility.GraphUtility.*;
 // TODO: Implement separation by property
 @Service
 @Qualifier("RQLPost")
+@RequiredArgsConstructor
 public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQLPostRepository rqlPostRepository;
@@ -29,12 +31,6 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 	private final RQLInternal rqlInternal;
 
 	private final RQL rql;
-
-	public RQLProcessingUnitPost(RQLPostRepository rqlPostRepository, RQLInternal rqlInternal, RQL rql) {
-		this.rqlPostRepository = rqlPostRepository;
-		this.rqlInternal = rqlInternal;
-		this.rql = rql;
-	}
 
 	@Override
 	@Transactional(readOnly = true)

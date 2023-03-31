@@ -4,6 +4,7 @@ import com.rest.graphql.rql.core.dto.LazyLoadEvent;
 import com.rql.toy.example.models.Post;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -13,12 +14,9 @@ import com.rql.toy.example.repository.PostRepository;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class PostsFetcher implements DataFetcher<PageResponse<Post>> {
 	private final PostRepository repository;
-
-	public PostsFetcher(PostRepository repository) {
-		this.repository = repository;
-	}
 
 	@Override
 	public PageResponse<Post> get(DataFetchingEnvironment dataFetchingEnvironment) {

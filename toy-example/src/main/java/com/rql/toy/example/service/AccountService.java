@@ -17,6 +17,7 @@ import com.rql.toy.example.mappers.RealAccountMapper;
 import com.rql.toy.example.models.Account;
 import com.rql.toy.example.models.QAccount;
 import com.rql.toy.example.models.QPerson;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -36,6 +37,7 @@ import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes
 
 
 @Service
+@RequiredArgsConstructor
 public class AccountService {
 
 	private final Logger logger = LoggerFactory.getLogger(AccountService.class);
@@ -43,13 +45,6 @@ public class AccountService {
 	private final AccountRepository accountRepository;
 	private final RealAccountMapper accountMapper;
 	private final RQL rql;
-
-	public AccountService(AccountRepository accountRepository,
-						  RealAccountMapper accountMapper, RQL rql) {
-		this.accountRepository = accountRepository;
-		this.accountMapper = accountMapper;
-		this.rql = rql;
-	}
 
 	//	@RQLAOPRestrict(type = Account.class)
 	public AccountDto findOne(String id, String[] attributePaths) {

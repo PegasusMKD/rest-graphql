@@ -6,6 +6,7 @@ import com.rql.toy.example.models.Post;
 import com.rql.toy.example.repository.CommentRepository;
 import com.rql.toy.example.repository.PersonRepository;
 import com.rql.toy.example.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import com.rql.toy.example.repository.AccountRepository;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class DatabaseService {
 
 	private Logger logger = LoggerFactory.getLogger(DatabaseService.class);
@@ -28,13 +30,6 @@ public class DatabaseService {
 	private final PersonRepository personRepository;
 
 	private final Random random = new Random();
-
-	public DatabaseService(AccountRepository accountRepository, PostRepository postRepository, CommentRepository commentRepository, PersonRepository personRepository) {
-		this.accountRepository = accountRepository;
-		this.postRepository = postRepository;
-		this.commentRepository = commentRepository;
-		this.personRepository = personRepository;
-	}
 
 	public void populateDatabase() {
 		Set<Person> people = new HashSet<>();

@@ -56,22 +56,13 @@ public class RQLProcessingUnitComment implements RQLProcessingUnit<Comment> {
 		return new TransferResultDto<>(parentAccessProperty, result);
 	}
 
-	private List<Comment> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
+	@Override
+	public List<Comment> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
 		switch (parentAccessProperty) {
 			case "account":
 				return rqlCommentRepository.findAllByAccountIdIn(ids, entityGraphUtility.getEagerEntityGraph(paths));
-//						rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
-//						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByAccountIdIn(ids, pageable, graph),
-//						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
-//								.rows(rqlCommentRepository.countAllByAccountIdIn(ids))
-//								.build(), Comment.class, paths.toArray(new String[0]));
 			case "post":
 				return rqlCommentRepository.findAllByPostIdIn(ids, entityGraphUtility.getEagerEntityGraph(paths));
-//				rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
-//						(EntityGraph graph, Pageable pageable) -> rqlCommentRepository.findAllByPostIdIn(ids, pageable, graph),
-//						wrapper -> wrapper, LazyLoadEvent.builder().first(0)
-//								.rows(rqlCommentRepository.countAllByPostIdIn(ids))
-//								.build(), Comment.class, paths.toArray(new String[0]));
 		}
 
 		throw new RuntimeException();

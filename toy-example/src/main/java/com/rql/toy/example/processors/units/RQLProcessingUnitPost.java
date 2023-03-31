@@ -43,17 +43,22 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
 		List<String> paths = graphUtility.getProcessedPaths(currentPartition, node);
 
-//		List<Post> result = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
-//				(EntityGraph graph, Pageable pageable) -> rqlPostRepository.findAllByPostedByIdIn(ids, pageable, graph),
-//				wrapper -> wrapper, LazyLoadEvent.builder().first(0)
-//						.rows(rqlPostRepository.countAllByPostedByIdIn(ids))
-//						.build(), Post.class, paths.toArray(new String[0]));
-		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, entityGraphUtility.getEagerEntityGraph(paths));
+		List<Post> result = callProperQuery(parentAccessProperty, ids, paths);
 
 		subPartition.forEach(_node -> graphUtility.completeNode(node, currentPartition, _node));
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);
+	}
+
+	@Override
+	public List<Post> callProperQuery(String parentAccessProperty, Set<String> ids, List<String> paths) {
+		switch (parentAccessProperty) {
+			case "postedBy":
+				return rqlPostRepository.findAllByPostedByIdIn(ids, entityGraphUtility.getEagerEntityGraph(paths));
+		}
+
+		throw new RuntimeException();
 	}
 
 }

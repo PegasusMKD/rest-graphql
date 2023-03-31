@@ -66,13 +66,15 @@ public class CommentService {
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Comment.class, attributePaths);
-		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
+		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).toList();
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Comments", (endTime - startTime) / 1000000);
 
 		// Fetch data
+		DynamicEntityGraph.Builder graph = DynamicEntityGraph.builder(EntityGraphType.LOAD);
+		paths.forEach(graph::addPath);
 		Page<Comment> page = commentRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
-				DynamicEntityGraph.NOOP : DynamicEntityGraph.builder(EntityGraphType.LOAD).addPath(paths.toArray(new String[0])).build());
+				DynamicEntityGraph.NOOP : graph.build());
 
 		// Map properties
 		startTime = System.nanoTime();

@@ -45,9 +45,9 @@ public class RQLSyncInternal {
 			paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 		}
 
-
-		EntityGraph graph = paths.isEmpty() ? DynamicEntityGraph.NOOP :
-				DynamicEntityGraph.builder(EntityGraphType.LOAD).addPath(paths.toArray(new String[0])).build();
+		DynamicEntityGraph.Builder dynamicGraph = DynamicEntityGraph.builder(EntityGraphType.LOAD);
+		paths.forEach(dynamicGraph::addPath);
+		EntityGraph graph = paths.isEmpty() ? DynamicEntityGraph.NOOP : dynamicGraph.build();
 
 		T queryResult = queryFunction.execute(graph);
 

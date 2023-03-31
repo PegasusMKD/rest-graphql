@@ -12,8 +12,9 @@ import java.util.List;
 public class EntityGraphUtility {
 
 	public EntityGraph getEagerEntityGraph(List<String> paths) {
-		return paths.isEmpty() ? DynamicEntityGraph.NOOP :
-				DynamicEntityGraph.builder(EntityGraphType.FETCH).addPath(paths.toArray(new String[0])).build();
+		DynamicEntityGraph.Builder graph = DynamicEntityGraph.builder(EntityGraphType.FETCH);
+		paths.forEach(graph::addPath);
+		return paths.isEmpty() ? DynamicEntityGraph.NOOP : graph.build();
 	}
 
 }

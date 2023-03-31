@@ -2,6 +2,8 @@ package com.rql.core.processing;
 
 import com.google.common.collect.Lists;
 import com.rql.core.utility.GeneralUtility;
+import com.rql.core.utility.GenericsUtility;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,29 +27,29 @@ import static com.rql.core.utility.GenericsUtility.*;
 
 
 @Service
+@RequiredArgsConstructor
 public class RQLMainProcessingUnit {
 
 	public static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 	private final RQLProcessingUnitDistributor processingUnitDistributor;
+	private final GenericsUtility genericsUtility;
+	private final GeneralUtility generalUtility;
 	private final Logger logger = LoggerFactory.getLogger(RQLMainProcessingUnit.class);
 	@Value("${rql.partition.elements.max-count}")
 	private Integer maxPartitionCount;
 
-	public RQLMainProcessingUnit(RQLProcessingUnitDistributor processingUnitDistributor) {
-		this.processingUnitDistributor = processingUnitDistributor;
-	}
 
 	public <T> void process(List<T> parents, PropertyNode node, List<PropertyNode> tree) throws NoSuchMethodException, IllegalAccessException {
 		if (parents.size() == 0 || node.isCompleted()) {
 			return;
 		}
 		Class<?> parentType = parents.get(0).getClass();
-		ChildType childType = findChildTypeAndParentAccess(node, parentType);
+		ChildType childType = genericsUtility.findChildTypeAndParentAccess(node, parentType);
 
-		MethodHandle idGetter = findIdGetter(parentType);
+		MethodHandle idGetter = genericsUtility.findIdGetter(parentType);
 
 		RQLProcessingUnit<?> processingUnit = processingUnitDistributor.findProcessingUnit(childType.getChildType());
-		Set<String> ids = parents.stream().map(entity -> invokeHandle(String.class, idGetter, entity)).collect(toSet());
+		Set<String> ids = parents.stream().map(entity -> genericsUtility.invokeHandle(String.class, idGetter, entity)).collect(toSet());
 		TransferResultDto<?> transferResult = processingUnit.process(tree, ids, node, childType.getParentAccessProperty());
 		try {
 			if (node.isOneToMany()) {
@@ -67,9 +69,9 @@ public class RQLMainProcessingUnit {
 		}
 
 		Class<?> parentType = parents.get(0).getClass();
-		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
+		MethodHandle childrenSetter = LOOKUP.findVirtual(parentType, "set" + generalUtility.capitalize(node.getProperty()), MethodType.methodType(void.class, Set.class));
 		MethodHandle childrenAdder = LOOKUP.findVirtual(Collection.class, "addAll", MethodType.methodType(boolean.class, Collection.class));
-		MethodHandle childrenGetter = LOOKUP.findVirtual(parentType, "get" + GeneralUtility.capitalize(node.getProperty()), MethodType.methodType(Set.class));
+		MethodHandle childrenGetter = LOOKUP.findVirtual(parentType, "get" + generalUtility.capitalize(node.getProperty()), MethodType.methodType(Set.class));
 
 		parents.forEach(parent -> {
 			try {
@@ -79,7 +81,7 @@ public class RQLMainProcessingUnit {
 			}
 		});
 
-		HashMap<Class<?>, MethodHandle> parentHandlers = mapParentHandlers(parents, children, parentProperty);
+		HashMap<Class<?>, MethodHandle> parentHandlers = genericsUtility.mapParentHandlers(parents, children, parentProperty);
 
 		ArrayList<CompletableFuture<?>> futures = new ArrayList<>();
 		Lists.partition(children, maxPartitionCount).forEach(_children ->
@@ -99,13 +101,13 @@ public class RQLMainProcessingUnit {
 
 	private Map<Object, ? extends Set<?>> groupByParent(MethodHandle idGetter, List<?> children, Class<?> parentType, HashMap<Class<?>, MethodHandle> parentHandlers) {
 		return new ConcurrentHashMap<>(children.stream().collect(groupingBy(child ->
-						invokeHandle(String.class, idGetter, invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
+						genericsUtility.invokeHandle(String.class, idGetter, genericsUtility.invokeHandle(parentType, parentHandlers.get(child.getClass()), child))
 				, Collectors.toSet())));
 	}
 
 	private <T> void addChildrenToParent(MethodHandle idGetter, Map<?, ? extends Set<?>> childMap, MethodHandle childrenAdder, MethodHandle childrenGetter, T parent) {
 		try {
-			Object parentId = invokeHandle(String.class, idGetter, parent);
+			Object parentId = genericsUtility.invokeHandle(String.class, idGetter, parent);
 			Set<?> items = childMap.get(parentId);
 			if (items == null || items.size() == 0) return;
 			childrenAdder.invoke(childrenGetter.invoke(parent), items);

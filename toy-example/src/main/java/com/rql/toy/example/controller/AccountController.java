@@ -32,6 +32,8 @@ public class AccountController {
 
 	private final DatabaseService databaseService;
 
+	private final ControllerSupport controllerSupport;
+
 	private Logger logger = LoggerFactory.getLogger(AccountController.class);
 
 	@PostMapping(value = "/page")
@@ -40,7 +42,7 @@ public class AccountController {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
 		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
-		ControllerSupport.defaultLazyLoadEvent(prbe);
+		controllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<AccountDto> ret = accountService.findAllAccounts(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
@@ -52,7 +54,7 @@ public class AccountController {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
 		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
-		ControllerSupport.defaultLazyLoadEvent(prbe);
+		controllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<AccountDto> ret = accountService.findAllAccountsJPA(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
@@ -64,7 +66,7 @@ public class AccountController {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
 		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
-		ControllerSupport.defaultLazyLoadEvent(prbe);
+		controllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<PostDto> ret = postService.findAllPosts(prbe, attributePaths);
 		return ResponseEntity.ok(ret);
@@ -76,7 +78,7 @@ public class AccountController {
 
 		prbe = prbe != null ? prbe : new PageRequestByExample<>();
 		attributePaths = attributePaths == null ? new String[]{} : attributePaths;
-		ControllerSupport.defaultLazyLoadEvent(prbe);
+		controllerSupport.defaultLazyLoadEvent(prbe);
 
 		PageResponse<CommentDto> ret = commentService.findAllComments(prbe, attributePaths);
 		return ResponseEntity.ok(ret);

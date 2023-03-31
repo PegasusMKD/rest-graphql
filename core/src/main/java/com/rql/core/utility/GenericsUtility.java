@@ -2,9 +2,11 @@ package com.rql.core.utility;
 
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import com.rql.core.dto.ChildType;
 import com.rql.core.nodes.PropertyNode;
+import org.springframework.stereotype.Component;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,42 +18,45 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class GenericsUtility {
+@Component
+@RequiredArgsConstructor
+public class GenericsUtility {
 
-	private static final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
+	private final MethodHandles.Lookup LOOKUP = MethodHandles.publicLookup();
 
-	public static Class<?> findActualChildType(Field val) {
+	private final GeneralUtility generalUtility;
+	public Class<?> findActualChildType(Field val) {
 		return Collection.class.isAssignableFrom(val.getType()) ?
 				(Class<?>) ((ParameterizedType) val.getGenericType()).getActualTypeArguments()[0] :
 				val.getType();
 	}
 
 	// TODO(Opinionated): Stop forcing a String ID
-	public static MethodHandle findIdGetter(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException {
+	public MethodHandle findIdGetter(Class<?> clazz) throws NoSuchMethodException, IllegalAccessException {
 		return LOOKUP.findVirtual(clazz, "getId", MethodType.methodType(String.class));
 	}
 
-	public static MethodHandle findGetter(Class<?> clazz, Class<?> resultType, String property) throws NoSuchMethodException, IllegalAccessException {
-		return LOOKUP.findVirtual(clazz, "get" + GeneralUtility.capitalize(property), MethodType.methodType(resultType));
+	public MethodHandle findGetter(Class<?> clazz, Class<?> resultType, String property) throws NoSuchMethodException, IllegalAccessException {
+		return LOOKUP.findVirtual(clazz, "get" + generalUtility.capitalize(property), MethodType.methodType(resultType));
 	}
 
-	public static ChildType findChildTypeAndParentAccess(PropertyNode node, Class<?> parentClass) {
+	public ChildType findChildTypeAndParentAccess(PropertyNode node, Class<?> parentClass) {
 		Field property = Arrays.stream(parentClass.getDeclaredFields())
 				.filter(field -> field.getName().equals(node.getProperty()))
 				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!"));
 
-		return new ChildType(GenericsUtility.findActualChildType(property),
+		return new ChildType(findActualChildType(property),
 				property.getAnnotation(OneToMany.class) != null ? property.getAnnotation(OneToMany.class).mappedBy()
 						: property.getAnnotation(ManyToMany.class).mappedBy());
 	}
 
-	public static Class<?> findActualChildType(Class<?> parentClass, String property) {
-		return GenericsUtility.findActualChildType(Arrays.stream(parentClass.getDeclaredFields())
+	public Class<?> findActualChildType(Class<?> parentClass, String property) {
+		return findActualChildType(Arrays.stream(parentClass.getDeclaredFields())
 				.filter(field -> field.getName().equals(property))
 				.findAny().orElseThrow(() -> new RuntimeException("Property doesn't exist!" + property)));
 	}
 
-	public static <T, K> K invokeHandle(Class<K> resultType, MethodHandle handle, T val) {
+	public <T, K> K invokeHandle(Class<K> resultType, MethodHandle handle, T val) {
 		try {
 			return resultType.cast(handle.invoke(val));
 		} catch (Throwable throwable) {
@@ -72,11 +77,11 @@ public abstract class GenericsUtility {
 	 * @param <T>            Type of parents
 	 */
 	@NotNull
-	public static <T> HashMap<Class<?>, MethodHandle> mapParentHandlers(List<T> parents, List<?> children, String parentProperty) {
+	public <T> HashMap<Class<?>, MethodHandle> mapParentHandlers(List<T> parents, List<?> children, String parentProperty) {
 		HashMap<Class<?>, MethodHandle> parentHandlers = new HashMap<>();
 		children.stream().map(Object::getClass).distinct().forEach(_clazz -> {
 			try {
-				parentHandlers.putIfAbsent(_clazz, GenericsUtility.findGetter(_clazz, parents.get(0).getClass(), parentProperty));
+				parentHandlers.putIfAbsent(_clazz, findGetter(_clazz, parents.get(0).getClass(), parentProperty));
 			} catch (NoSuchMethodException | IllegalAccessException e) {
 				e.printStackTrace();
 			}

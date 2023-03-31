@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraphType;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.rql.core.nodes.PropertyNode;
+import com.rql.core.utility.GraphUtility;
 import com.rql.toy.example.controller.rest.PageRequestByExample;
 import com.rql.toy.example.controller.rest.PageResponse;
 import com.rql.toy.example.dto.CommentDto;
@@ -25,8 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.rql.core.utility.GraphUtility.createPropertyNodes;
-
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +38,8 @@ public class CommentService {
 	private final PostService postService;
 
 	private final AccountService accountService;
+
+	private final GraphUtility graphUtility;
 
 	private BooleanExpression makeFilter(CommentDto dto) {
 		return makeFilter(dto, Optional.empty(), Optional.empty()).build();
@@ -64,7 +65,7 @@ public class CommentService {
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = createPropertyNodes(Comment.class, attributePaths);
+		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Comment.class, attributePaths);
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Comments", (endTime - startTime) / 1000000);

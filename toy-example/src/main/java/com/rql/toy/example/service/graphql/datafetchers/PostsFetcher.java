@@ -17,10 +17,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PostsFetcher implements DataFetcher<PageResponse<Post>> {
 	private final PostRepository repository;
+	private final LazyLoadEventHelper lazyLoadEventHelper;
 
 	@Override
 	public PageResponse<Post> get(DataFetchingEnvironment dataFetchingEnvironment) {
-		LazyLoadEvent lazyLoadEvent = LazyLoadEventHelper.createLazyLoadEvent(dataFetchingEnvironment);
+		LazyLoadEvent lazyLoadEvent = lazyLoadEventHelper.createLazyLoadEvent(dataFetchingEnvironment);
 		Pageable pageable = Optional.of(lazyLoadEvent).map(LazyLoadEvent::toPageable).orElse(null);
 		assert pageable != null;
 		Page<Post> result = repository.findAll(pageable);

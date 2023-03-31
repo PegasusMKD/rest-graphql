@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.rql.core.RQL;
 import com.rql.core.RQLAsyncRestriction;
 import com.rql.core.nodes.PropertyNode;
+import com.rql.core.utility.GraphUtility;
 import com.rql.toy.example.controller.rest.PageRequestByExample;
 import com.rql.toy.example.controller.rest.PageResponse;
 import com.rql.toy.example.dto.AccountDto;
@@ -32,8 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.rql.core.utility.GraphUtility.createPropertyNodes;
-
 
 @Service
 @RequiredArgsConstructor
@@ -42,12 +41,13 @@ public class AccountService {
 	private final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	private final AccountRepository accountRepository;
+	private final GraphUtility graphUtility;
 	private final RQL rql;
 
 	//	@RQLAOPRestrict(type = Account.class)
 	public AccountDto findOne(String id, String[] attributePaths) {
 		// Get minimal number of attributePaths for entity graph
-		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
+		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Account.class, attributePaths);
 
 		// Fetch data
 		Account entity = rql.rqlSingleSelect(
@@ -70,7 +70,7 @@ public class AccountService {
 				Slice::getContent, prbe.getLazyLoadEvent(), Account.class, attributePaths);
 
 		// Get minimal number of attributePaths for entity graph
-		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
+		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Account.class, attributePaths);
 
 		// Map properties
 		List<AccountDto> content = new ArrayList<>(RealAccountMapper.INSTANCE.toAccountDtos(page.getContent(), propertyNodes));
@@ -83,7 +83,7 @@ public class AccountService {
 
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
+		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Account.class, attributePaths);
 		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
@@ -94,7 +94,6 @@ public class AccountService {
 
 		// Map properties
 		startTime = System.nanoTime();
-		List<String> props = new ArrayList<>();
 		List<AccountDto> content =
 				new ArrayList<>(RealAccountMapper.INSTANCE.toAccountDtos(new HashSet<>(page.getContent()), propertyNodes));
 		endTime = System.nanoTime();

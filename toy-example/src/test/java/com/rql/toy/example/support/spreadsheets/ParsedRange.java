@@ -1,14 +1,10 @@
 package com.rql.toy.example.support.spreadsheets;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@AllArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
+@AllArgsConstructor
 public class ParsedRange {
 	private Integer startColumnIndex;
 	private Integer startRowIndex;

@@ -32,22 +32,25 @@ public class RQLProcessingUnitPost implements RQLProcessingUnit<Post> {
 
 	private final RQL rql;
 
+	private final GraphUtility graphUtility;
+	private final EntityGraphUtility entityGraphUtility;
+
 	@Override
 	@Transactional(readOnly = true)
 	public TransferResultDto<Post> process(List<PropertyNode> tree, Set<String> ids, PropertyNode node, String parentAccessProperty) {
-		List<PropertyNode> subPartition = getSubPartition(tree, node);
-		List<PropertyNode> currentPartition = getCurrentValidPartition(subPartition, node.getGraphPath())
+		List<PropertyNode> subPartition = graphUtility.getSubPartition(tree, node);
+		List<PropertyNode> currentPartition = graphUtility.getCurrentValidPartition(subPartition, node.getGraphPath())
 				.stream().filter(PropertyNode::isXToOne).collect(Collectors.toList());
-		List<String> paths = GraphUtility.getProcessedPaths(currentPartition, node);
+		List<String> paths = graphUtility.getProcessedPaths(currentPartition, node);
 
 //		List<Post> result = rql.asyncRQLSelectPagination(RQLAsyncRestriction.THREAD_COUNT, 5,
 //				(EntityGraph graph, Pageable pageable) -> rqlPostRepository.findAllByPostedByIdIn(ids, pageable, graph),
 //				wrapper -> wrapper, LazyLoadEvent.builder().first(0)
 //						.rows(rqlPostRepository.countAllByPostedByIdIn(ids))
 //						.build(), Post.class, paths.toArray(new String[0]));
-		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, EntityGraphUtility.getEagerEntityGraph(paths));
+		List<Post> result = rqlPostRepository.findAllByPostedByIdIn(ids, entityGraphUtility.getEagerEntityGraph(paths));
 
-		subPartition.forEach(_node -> completeNode(node, currentPartition, _node));
+		subPartition.forEach(_node -> graphUtility.completeNode(node, currentPartition, _node));
 
 		rqlInternal.processSubPartitions(subPartition, result, node.getProperty());
 		return new TransferResultDto<>(parentAccessProperty, result);

@@ -35,3 +35,4 @@ build/
 ### Custom ###
 *credentials.json
 tokens
+test-jsons

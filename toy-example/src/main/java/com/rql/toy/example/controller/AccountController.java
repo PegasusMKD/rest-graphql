@@ -8,6 +8,7 @@ import com.rql.toy.example.dto.PostDto;
 import com.rql.toy.example.service.CommentService;
 import com.rql.toy.example.service.DatabaseService;
 import com.rql.toy.example.service.PostService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,10 @@ import com.rql.toy.example.controller.support.ControllerSupport;
 import com.rql.toy.example.service.AccountService;
 
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/users")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AccountController {
 
 	private final AccountService accountService;
@@ -31,13 +33,6 @@ public class AccountController {
 	private final DatabaseService databaseService;
 
 	private Logger logger = LoggerFactory.getLogger(AccountController.class);
-
-	public AccountController(AccountService accountService, CommentService commentService, PostService postService, DatabaseService databaseService) {
-		this.accountService = accountService;
-		this.commentService = commentService;
-		this.postService = postService;
-		this.databaseService = databaseService;
-	}
 
 	@PostMapping(value = "/page")
 	public ResponseEntity<PageResponse<AccountDto>> findAllAccounts(@RequestBody(required = false) PageRequestByExample<AccountDto> prbe,

@@ -1,8 +1,0 @@
-2023-03-31 23:55:00.726|1|select version()
-2023-03-31 23:55:01.318|3|select * from information_schema.sequences
-2023-03-31 23:55:01.445|0|select * from "public"."person" where 1=0
-2023-03-31 23:55:01.455|0|select * from "public"."account" where 1=0
-2023-03-31 23:55:01.457|0|select * from "public"."account" where 1=0
-2023-03-31 23:55:01.464|0|select * from "public"."account" where 1=0
-2023-03-31 23:55:01.466|0|select * from "public"."post" where 1=0
-2023-03-31 23:55:01.474|0|select * from "public"."account" where 1=0

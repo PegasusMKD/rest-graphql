@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -84,13 +83,15 @@ public class AccountService {
 		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
 		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Account.class, attributePaths);
-		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).collect(Collectors.toList());
+		List<String> paths = propertyNodes.stream().map(PropertyNode::getGraphPath).toList();
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 
 		// Fetch data
-		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
-				DynamicEntityGraph.NOOP : DynamicEntityGraph.builder(EntityGraphType.LOAD).addPath(paths.toArray(new String[0])).build());
+		DynamicEntityGraph.Builder dynamicGraph = DynamicEntityGraph.builder(EntityGraphType.LOAD);
+		paths.forEach(dynamicGraph::addPath);
+		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(),
+				paths.isEmpty() ? DynamicEntityGraph.NOOP : dynamicGraph.build());
 
 		// Map properties
 		startTime = System.nanoTime();

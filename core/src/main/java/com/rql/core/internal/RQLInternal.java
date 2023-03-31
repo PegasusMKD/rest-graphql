@@ -4,6 +4,7 @@ import com.rql.core.nodes.PropertyNode;
 import com.rql.core.processing.RQLMainProcessingUnit;
 import com.rql.core.utility.GenericsUtility;
 import com.rql.core.utility.GraphUtility;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.lang.invoke.MethodHandle;
@@ -11,20 +12,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class RQLInternal {
 
 	private final RQLMainProcessingUnit rqlMainProcessingUnit;
 
-	public RQLInternal(RQLMainProcessingUnit rqlMainProcessingUnit) {
-		this.rqlMainProcessingUnit = rqlMainProcessingUnit;
-	}
+	private final GraphUtility graphUtility;
+	private final GenericsUtility genericsUtility;
 
 	public <K> void processSubPartitions(List<PropertyNode> propertyNodes, List<K> parents, String currentPath) {
 		if (propertyNodes.stream().allMatch(PropertyNode::isCompleted)) {
 			return;
 		}
 
-		GraphUtility.getCurrentValidPartition(propertyNodes, currentPath)
+		graphUtility.getCurrentValidPartition(propertyNodes, currentPath)
 				.stream().filter(node -> !node.isCompleted())
 				.filter(PropertyNode::isOneToMany).forEach(node -> {
 					try {
@@ -52,11 +53,11 @@ public class RQLInternal {
 		List<?> latestParents = parents;
 		for (String property : properties) {
 			Class<?> parentType = latestParents.get(0).getClass();
-			Class<?> childType = GenericsUtility.findActualChildType(parentType, property);
-			MethodHandle getter = GenericsUtility.findGetter(parentType, childType, property);
+			Class<?> childType = genericsUtility.findActualChildType(parentType, property);
+			MethodHandle getter = genericsUtility.findGetter(parentType, childType, property);
 
 			latestParents = latestParents.stream()
-					.map(item -> GenericsUtility.invokeHandle(childType, getter, item))
+					.map(item -> genericsUtility.invokeHandle(childType, getter, item))
 					.collect(Collectors.toList());
 		}
 

@@ -4,6 +4,7 @@ import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.rql.core.RQL;
 import com.rql.core.nodes.PropertyNode;
+import com.rql.core.utility.GraphUtility;
 import com.rql.toy.example.models.QPost;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -25,8 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.rql.core.utility.GraphUtility.createPropertyNodes;
-
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +37,7 @@ public class PostService {
 
 	private final AccountService accountService;
 
+	private final GraphUtility graphUtility;
 	private final RQL rql;
 
 	private BooleanExpression makeFilter(PostDto dto) {
@@ -68,7 +68,7 @@ public class PostService {
 		// TODO: Implement mapping as "special" feature/option
 //		// Get minimal number of attributePaths for entity graph
 		long startTime = System.nanoTime();
-		List<PropertyNode> propertyNodes = createPropertyNodes(Post.class, attributePaths);
+		List<PropertyNode> propertyNodes = graphUtility.createPropertyNodes(Post.class, attributePaths);
 		long endTime = System.nanoTime();
 		logger.info("Generation/traversal of paths took: {} ms -- Posts", (endTime - startTime) / 1000000);
 

@@ -7,13 +7,11 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 @Data
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
+@NoArgsConstructor
 @EqualsAndHashCode
+@AllArgsConstructor
 public class PageRequestByExample<DTO> {
 	private DTO example;
 	private LazyLoadEvent lazyLoadEvent;

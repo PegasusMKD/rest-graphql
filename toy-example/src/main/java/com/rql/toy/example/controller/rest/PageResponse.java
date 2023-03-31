@@ -5,13 +5,11 @@ import lombok.*;
 import java.util.List;
 
 @Data
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
 @EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 public class PageResponse<T> {
 
 	private Integer totalPages;

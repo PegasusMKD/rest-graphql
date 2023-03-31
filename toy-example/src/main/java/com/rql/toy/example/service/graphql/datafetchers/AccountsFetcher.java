@@ -18,10 +18,11 @@ import java.util.Optional;
 public class AccountsFetcher implements DataFetcher<PageResponse<Account>> {
 
 	private final AccountRepository repository;
+	private final LazyLoadEventHelper lazyLoadEventHelper;
 
 	@Override
 	public PageResponse<Account> get(DataFetchingEnvironment dataFetchingEnvironment) {
-		LazyLoadEvent lazyLoadEvent = LazyLoadEventHelper.createLazyLoadEvent(dataFetchingEnvironment);
+		LazyLoadEvent lazyLoadEvent = lazyLoadEventHelper.createLazyLoadEvent(dataFetchingEnvironment);
 		Pageable pageable = Optional.of(lazyLoadEvent).map(LazyLoadEvent::toPageable).orElse(null);
 		assert pageable != null;
 		Page<Account> result = repository.findAll(pageable);

@@ -6,13 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @Data
-@Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
+@NoArgsConstructor
 @EqualsAndHashCode
+@AllArgsConstructor
 public class LazyLoadEvent {
 	/**
 	 * First row offset.

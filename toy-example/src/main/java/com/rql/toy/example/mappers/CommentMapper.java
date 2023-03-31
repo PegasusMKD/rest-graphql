@@ -1,7 +1,7 @@
 package com.rql.toy.example.mappers;
 
-import com.rest.graphql.rql.core.nodes.PropertyNode;
-import com.rest.graphql.rql.core.nodes.TraversalMapper;
+import com.rql.core.nodes.PropertyNode;
+import com.rql.core.nodes.TraversalMapper;
 import com.rql.toy.example.dto.CommentDto;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -11,10 +11,10 @@ import com.rql.toy.example.models.Comment;
 import java.util.List;
 import java.util.Set;
 
-@Repository
 @Mapper(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TraversalMapper.class})
 public interface CommentMapper {
 
+	CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
 	AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
 
 	PostMapper postMapper = Mappers.getMapper(PostMapper.class);

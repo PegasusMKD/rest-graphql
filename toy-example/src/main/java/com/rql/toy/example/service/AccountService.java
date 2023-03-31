@@ -1,13 +1,12 @@
 package com.rql.toy.example.service;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphType;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphUtils;
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraphs;
+import com.cosium.spring.data.jpa.entity.graph.domain2.DynamicEntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraphType;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.rest.graphql.rql.core.RQL;
-import com.rest.graphql.rql.core.RQLAsyncRestriction;
-import com.rest.graphql.rql.core.nodes.PropertyNode;
+import com.rql.core.RQL;
+import com.rql.core.RQLAsyncRestriction;
+import com.rql.core.nodes.PropertyNode;
 import com.rql.toy.example.controller.rest.PageRequestByExample;
 import com.rql.toy.example.controller.rest.PageResponse;
 import com.rql.toy.example.dto.AccountDto;
@@ -33,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.rest.graphql.rql.core.utility.GraphUtility.createPropertyNodes;
+import static com.rql.core.utility.GraphUtility.createPropertyNodes;
 
 
 @Service
@@ -43,7 +42,6 @@ public class AccountService {
 	private final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	private final AccountRepository accountRepository;
-	private final RealAccountMapper accountMapper;
 	private final RQL rql;
 
 	//	@RQLAOPRestrict(type = Account.class)
@@ -59,7 +57,7 @@ public class AccountService {
 		);
 
 		// Map properties
-		return accountMapper.toAccountDto(entity, propertyNodes);
+		return RealAccountMapper.INSTANCE.toAccountDto(entity, propertyNodes);
 	}
 
 	@Transactional
@@ -75,7 +73,7 @@ public class AccountService {
 		List<PropertyNode> propertyNodes = createPropertyNodes(Account.class, attributePaths);
 
 		// Map properties
-		List<AccountDto> content = new ArrayList<>(accountMapper.toAccountDtos(page.getContent(), propertyNodes));
+		List<AccountDto> content = new ArrayList<>(RealAccountMapper.INSTANCE.toAccountDtos(page.getContent(), propertyNodes));
 
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);
 	}
@@ -92,13 +90,13 @@ public class AccountService {
 
 		// Fetch data
 		Page<Account> page = accountRepository.findAll(makeFilter(example), prbe.toPageable(), paths.isEmpty() ?
-				EntityGraphs.empty() : EntityGraphUtils.fromAttributePaths(EntityGraphType.LOAD, paths.toArray(new String[0])));
+				DynamicEntityGraph.NOOP : DynamicEntityGraph.builder(EntityGraphType.LOAD).addPath(paths.toArray(new String[0])).build());
 
 		// Map properties
 		startTime = System.nanoTime();
 		List<String> props = new ArrayList<>();
 		List<AccountDto> content =
-				new ArrayList<>(accountMapper.toAccountDtos(new HashSet<>(page.getContent()), propertyNodes));
+				new ArrayList<>(RealAccountMapper.INSTANCE.toAccountDtos(new HashSet<>(page.getContent()), propertyNodes));
 		endTime = System.nanoTime();
 		logger.info("Mapping of paths took: {} ms -- Accounts", (endTime - startTime) / 1000000);
 		return new PageResponse<>(page.getTotalPages(), page.getTotalElements(), content);

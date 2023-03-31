@@ -1,11 +1,10 @@
 package com.rql.toy.example.mappers;
 
-import com.rest.graphql.rql.core.nodes.PropertyNode;
-import com.rest.graphql.rql.core.nodes.TraversalMapper;
+import com.rql.core.nodes.PropertyNode;
+import com.rql.core.nodes.TraversalMapper;
 import com.rql.toy.example.models.Post;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.rql.toy.example.dto.PostDto;
 
 import java.util.List;
@@ -14,6 +13,7 @@ import java.util.Set;
 @Mapper(nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
 		nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TraversalMapper.class})
 public interface PostMapper {
+	PostMapper INSTANCE = Mappers.getMapper(PostMapper.class);
 
 	AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
 

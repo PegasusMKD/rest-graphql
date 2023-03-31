@@ -1,7 +1,7 @@
 package com.rql.toy.example.models;
 
 
-import com.rest.graphql.rql.core.restrict.RQLRestrict;
+import com.rql.core.restrict.RQLRestrict;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

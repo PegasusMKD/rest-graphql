@@ -1,6 +1,6 @@
 package com.rql.toy.example.controller.rest;
 
-import com.rest.graphql.rql.core.dto.LazyLoadEvent;
+import com.rql.core.dto.LazyLoadEvent;
 import lombok.*;
 import org.springframework.data.domain.Pageable;
 

@@ -1,6 +1,6 @@
 package com.rql.toy.example.processors.repository;
 
-import com.cosium.spring.data.jpa.entity.graph.domain.EntityGraph;
+import com.cosium.spring.data.jpa.entity.graph.domain2.EntityGraph;
 import com.cosium.spring.data.jpa.entity.graph.repository.EntityGraphJpaRepository;
 import com.rql.toy.example.models.Comment;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
